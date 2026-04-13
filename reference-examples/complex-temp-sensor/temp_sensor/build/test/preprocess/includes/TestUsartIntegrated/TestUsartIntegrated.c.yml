@@ -1,0 +1,12 @@
+---
+- build/vendor/unity/src/unity.h
+- src/Types.h
+- src/UsartConductor.h
+- src/UsartModel.h
+- src/UsartHardware.h
+- src/ModelConfig.h
+- MockTaskScheduler.h
+- MockUsartConfigurator.h
+- MockUsartPutChar.h
+- MockTemperatureFilter.h
+- MockUsartBaudRateRegisterCalculator.h

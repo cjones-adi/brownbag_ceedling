@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<testsuites tests="7" failures="0" time="0.001">
+  <testsuite name="test/test_led_control" tests="7" failures="0" skipped="0" errors="0" time="0.001">
+    <testcase name="test_led_control_init_should_succeed" time="0.000"/>
+    <testcase name="test_led_control_set_blue_on" time="0.000"/>
+    <testcase name="test_led_control_set_blue_off" time="0.000"/>
+    <testcase name="test_led_control_set_red_on" time="0.000"/>
+    <testcase name="test_led_control_toggle_blue" time="0.000"/>
+    <testcase name="test_led_control_set_both_leds" time="0.000"/>
+    <testcase name="test_led_control_get_initial_state" time="0.000"/>
+  </testsuite>
+</testsuites>

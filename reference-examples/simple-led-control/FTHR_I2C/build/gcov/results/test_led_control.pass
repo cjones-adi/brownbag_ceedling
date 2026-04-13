@@ -1,0 +1,43 @@
+---
+:source:
+  :file: test/test_led_control.c
+  :dirname: test
+  :basename: test_led_control.c
+:successes:
+- :test: test_led_control_init_should_succeed
+  :line: 23
+  :message: ''
+  :unity_test_time: 0
+- :test: test_led_control_set_blue_on
+  :line: 30
+  :message: ''
+  :unity_test_time: 0
+- :test: test_led_control_set_blue_off
+  :line: 38
+  :message: ''
+  :unity_test_time: 0
+- :test: test_led_control_set_red_on
+  :line: 47
+  :message: ''
+  :unity_test_time: 0
+- :test: test_led_control_toggle_blue
+  :line: 55
+  :message: ''
+  :unity_test_time: 0
+- :test: test_led_control_set_both_leds
+  :line: 71
+  :message: ''
+  :unity_test_time: 0
+- :test: test_led_control_get_initial_state
+  :line: 86
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 7
+  :passed: 7
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.0021934200000259807

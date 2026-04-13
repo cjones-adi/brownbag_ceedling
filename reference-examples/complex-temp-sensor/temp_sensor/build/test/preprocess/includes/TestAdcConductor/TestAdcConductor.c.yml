@@ -1,0 +1,7 @@
+---
+- build/vendor/unity/src/unity.h
+- test/support/UnityHelper.h
+- src/Types.h
+- src/AdcConductor.h
+- MockAdcModel.h
+- MockAdcHardware.h

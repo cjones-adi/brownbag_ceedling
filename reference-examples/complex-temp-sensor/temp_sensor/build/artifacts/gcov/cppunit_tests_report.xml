@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TestRun>
+  <FailedTests/>
+  <SuccessfulTests>
+    <Test id="1">
+      <Name>test/TestExecutor.c::testInitShouldCallInitOfAllConductorsAndTheModel</Name>
+    </Test>
+    <Test id="2">
+      <Name>test/TestExecutor.c::testRunShouldCallRunForEachConductorAndReturnTrueAlways</Name>
+    </Test>
+    <Test id="3">
+      <Name>test/TestTaskScheduler.c::testShouldScheduleUsartTaskAfter1000ms</Name>
+    </Test>
+    <Test id="4">
+      <Name>test/TestTaskScheduler.c::testShouldClearUsartDoFlagAfterReported</Name>
+    </Test>
+    <Test id="5">
+      <Name>test/TestTaskScheduler.c::testShouldScheduleUsartTaskEvery1000ms</Name>
+    </Test>
+    <Test id="6">
+      <Name>test/TestTaskScheduler.c::testShouldScheduleUsartTaskOnlyOncePerPeriod</Name>
+    </Test>
+    <Test id="7">
+      <Name>test/TestTaskScheduler.c::testShouldScheduleAdcTaskAfter100ms</Name>
+    </Test>
+    <Test id="8">
+      <Name>test/TestTaskScheduler.c::testShouldClearAdcDoFlagAfterReported</Name>
+    </Test>
+    <Test id="9">
+      <Name>test/TestTaskScheduler.c::testShouldScheduleAdcTaskEvery100ms</Name>
+    </Test>
+    <Test id="10">
+      <Name>test/TestTaskScheduler.c::testShouldScheduleAdcTaskOnlyOncePerPeriod</Name>
+    </Test>
+    <Test id="11">
+      <Name>test/TestTimerConductor.c::testInitShouldCallHardwareInit</Name>
+    </Test>
+    <Test id="12">
+      <Name>test/TestTimerConductor.c::testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling</Name>
+    </Test>
+    <Test id="13">
+      <Name>test/TestTemperatureCalculator.c::testTemperatureCalculatorShouldCalculateTemperatureFromMillivolts</Name>
+    </Test>
+    <Test id="14">
+      <Name>test/TestTemperatureCalculator.c::testShouldReturnNegativeInfinityWhen_0_millivoltsInput</Name>
+    </Test>
+    <Test id="15">
+      <Name>test/TestTimerHardware.c::testInitShouldDelegateAppropriatelyToConfigurator</Name>
+    </Test>
+    <Test id="16">
+      <Name>test/TestMain.c::testMainShouldCallExecutorInitAndContinueToCallExecutorRunUntilHalted</Name>
+    </Test>
+    <Test id="17">
+      <Name>test/TestModel.c::testInitShouldCallSchedulerAndTemperatureFilterInit</Name>
+    </Test>
+    <Test id="18">
+      <Name>test/TestTemperatureFilter.c::testShouldInitializeTemeratureToInvalidValue</Name>
+    </Test>
+    <Test id="19">
+      <Name>test/TestTemperatureFilter.c::testShouldInitializeTemperatureAfterCallToInit</Name>
+    </Test>
+    <Test id="20">
+      <Name>test/TestTemperatureFilter.c::testShouldWeightEachSubsequentValueBy25PercentAfterInitialValue</Name>
+    </Test>
+    <Test id="21">
+      <Name>test/TestTemperatureFilter.c::testShouldResetAverageIfPassedInfinityOrInvalidValue</Name>
+    </Test>
+    <Test id="22">
+      <Name>test/TestTimerIntegrated.c::testInitShouldCallHardwareInit</Name>
+    </Test>
+    <Test id="23">
+      <Name>test/TestTimerIntegrated.c::testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling</Name>
+    </Test>
+    <Test id="24">
+      <Name>test/TestTimerModel.c::testUpdateTimeShouldDelegateToTaskScheduler</Name>
+    </Test>
+    <Test id="25">
+      <Name>test/TestUsartBaudRateRegisterCalculator.c::testCalculateBaudRateRegisterSettingShouldCalculateRegisterSettingAppropriately</Name>
+    </Test>
+    <Test id="26">
+      <Name>test/TestUsartConductor.c::testShouldInitializeHardwareWhenInitCalled</Name>
+    </Test>
+    <Test id="27">
+      <Name>test/TestUsartConductor.c::testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet</Name>
+    </Test>
+    <Test id="28">
+      <Name>test/TestUsartConductor.c::testRunShouldGetCurrentTemperatureAndTransmitIfSchedulerSaysItIsTime</Name>
+    </Test>
+    <Test id="29">
+      <Name>test/adc/TestAdcConductor.c::testInitShouldCallHardwareInit</Name>
+    </Test>
+    <Test id="30">
+      <Name>test/adc/TestAdcConductor.c::testRunShouldNotDoAnythingIfItIsNotTime</Name>
+    </Test>
+    <Test id="31">
+      <Name>test/adc/TestAdcConductor.c::testRunShouldNotPassAdcResultToModelIfSampleIsNotComplete</Name>
+    </Test>
+    <Test id="32">
+      <Name>test/adc/TestAdcConductor.c::testRunShouldGetLatestSampleFromAdcAndPassItToModelAndStartNewConversionWhenItIsTime</Name>
+    </Test>
+    <Test id="33">
+      <Name>test/adc/TestAdcConductor.c::testJustHereToTest_Should_ProperlyPassAStructAndVerifyIt</Name>
+    </Test>
+    <Test id="34">
+      <Name>test/adc/TestAdcConductor.c::test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected1</Name>
+    </Test>
+    <Test id="35">
+      <Name>test/adc/TestAdcConductor.c::test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected2</Name>
+    </Test>
+    <Test id="36">
+      <Name>test/adc/TestAdcConductor.c::test_AdcConductor_YetAnotherTest_Should_VerifyThatPointersToStructsAreTestable</Name>
+    </Test>
+    <Test id="37">
+      <Name>test/TestUsartHardware.c::testInitShouldConfigureUsartPeripheralByCallingConfiguratorAppropriately</Name>
+    </Test>
+    <Test id="38">
+      <Name>test/TestUsartHardware.c::testTransmitStringShouldSendDesiredStringOutUsingUsart</Name>
+    </Test>
+    <Test id="39">
+      <Name>test/TestUsartModel.c::testGetBaudRateRegisterSettingShouldReturnAppropriateBaudRateRegisterSetting</Name>
+    </Test>
+    <Test id="40">
+      <Name>test/TestUsartModel.c::testGetFormattedTemperatureFormatsTemperatureFromCalculatorAppropriately</Name>
+    </Test>
+    <Test id="41">
+      <Name>test/TestUsartModel.c::testShouldReturnErrorMessageUponInvalidTemperatureValue</Name>
+    </Test>
+    <Test id="42">
+      <Name>test/TestUsartModel.c::testShouldReturnWakeupMessage</Name>
+    </Test>
+    <Test id="43">
+      <Name>test/TestUsartIntegrated.c::testShouldInitializeHardwareWhenInitCalled</Name>
+    </Test>
+    <Test id="44">
+      <Name>test/TestUsartIntegrated.c::testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet</Name>
+    </Test>
+    <Test id="45">
+      <Name>test/adc/TestAdcHardware.c::testInitShouldDelegateToConfiguratorAndTemperatureSensor</Name>
+    </Test>
+    <Test id="46">
+      <Name>test/adc/TestAdcHardware.c::testGetSampleCompleteShouldReturn_FALSE_WhenTemperatureSensorSampleReadyReturns_FALSE</Name>
+    </Test>
+    <Test id="47">
+      <Name>test/adc/TestAdcHardware.c::testGetSampleCompleteShouldReturn_TRUE_WhenTemperatureSensorSampleReadyReturns_TRUE</Name>
+    </Test>
+    <Test id="48">
+      <Name>test/adc/TestAdcHardware.c::testGetSampleShouldDelegateToAdcTemperatureSensor</Name>
+    </Test>
+    <Test id="49">
+      <Name>test/adc/TestAdcModel.c::testDoGetSampleShouldReturn_FALSE_WhenTaskSchedulerReturns_FALSE</Name>
+    </Test>
+    <Test id="50">
+      <Name>test/adc/TestAdcModel.c::testDoGetSampleShouldReturn_TRUE_WhenTaskSchedulerReturns_TRUE</Name>
+    </Test>
+    <Test id="51">
+      <Name>test/adc/TestAdcModel.c::testProcessInputShouldDelegateToTemperatureCalculatorAndPassResultToFilter</Name>
+    </Test>
+  </SuccessfulTests>
+  <IgnoredTests/>
+  <Statistics>
+    <Tests>51</Tests>
+    <Ignores>0</Ignores>
+    <FailuresTotal>0</FailuresTotal>
+    <Errors>0</Errors>
+    <Failures>0</Failures>
+  </Statistics>
+</TestRun>

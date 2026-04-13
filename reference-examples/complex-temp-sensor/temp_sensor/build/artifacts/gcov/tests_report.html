@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>Test Overview</title>
+<style>
+* { font-family: sans-serif;}
+table {
+border-collapse: collapse;
+table-layout: fixed;
+width: 99%;
+margin: 0 0px 25px 7px;
+padding-right: 7px;
+font-size: 0.9em;
+min-width: 400px;
+border-radius: 5px 5px 0 0;
+overflow: hidden;
+box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+}
+details summary { cursor: pointer; }
+h1 {
+margin: 0 0 7px 14px;
+font-size: 1.5em;
+font-weight: bold;
+text-align: left;
+}
+thead tr {
+background-color: #009879;
+color: #ffffff;
+text-align: left;
+font-weight: bold;
+}
+.failed thead tr { background-color: #983500; }
+.ignored thead tr { background-color: #849800; }
+.success thead tr { background-color: #00981e; }
+table th, td { padding: 12px 15px; word-break: break-all; }
+table tbody tr { border-bottom: 1px solid #dddddd; }
+table tbody tr:nth-of-type(even) { background-color: #f3f3f3; }
+table tbody tr:last-of-type { border-bottom: 2px solid #009879; }
+.failed tbody tr:last-of-type { border-bottom: 2px solid #983500; }
+.ignored tbody tr:last-of-type { border-bottom: 2px solid #849800; }
+.success tbody tr:last-of-type { border-bottom: 2px solid #00981e; }
+table tbody tr:hover { color: #009879; }
+.failed tbody tr:hover { color: #983500; }
+.ignored tbody tr:hover { color: #849800; }
+.success tbody tr:hover { color: #00981e; }
+</style>
+</head>
+<body>
+<h1>Summary</h1>
+<table>
+<thead><tr><th>Total</th><th>Passed</th><th>Ignored</th><th>Failed</th></tr></thead>
+<tbody>
+<tr>
+<td>51</td>
+<td>51</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<h1>Success Tests</h1>
+<table class='success'>
+<thead><tr><th>File</th><th>Name</th><th>Message</th></tr></thead>
+<tbody>
+<tr>
+<td rowspan="2">test/TestExecutor.c</td>
+<td>testInitShouldCallInitOfAllConductorsAndTheModel</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldCallRunForEachConductorAndReturnTrueAlways</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="8">test/TestTaskScheduler.c</td>
+<td>testShouldScheduleUsartTaskAfter1000ms</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldClearUsartDoFlagAfterReported</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldScheduleUsartTaskEvery1000ms</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldScheduleUsartTaskOnlyOncePerPeriod</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldScheduleAdcTaskAfter100ms</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldClearAdcDoFlagAfterReported</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldScheduleAdcTaskEvery100ms</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldScheduleAdcTaskOnlyOncePerPeriod</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="2">test/TestTimerConductor.c</td>
+<td>testInitShouldCallHardwareInit</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="2">test/TestTemperatureCalculator.c</td>
+<td>testTemperatureCalculatorShouldCalculateTemperatureFromMillivolts</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldReturnNegativeInfinityWhen_0_millivoltsInput</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="1">test/TestTimerHardware.c</td>
+<td>testInitShouldDelegateAppropriatelyToConfigurator</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="1">test/TestMain.c</td>
+<td>testMainShouldCallExecutorInitAndContinueToCallExecutorRunUntilHalted</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="1">test/TestModel.c</td>
+<td>testInitShouldCallSchedulerAndTemperatureFilterInit</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="4">test/TestTemperatureFilter.c</td>
+<td>testShouldInitializeTemeratureToInvalidValue</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldInitializeTemperatureAfterCallToInit</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldWeightEachSubsequentValueBy25PercentAfterInitialValue</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldResetAverageIfPassedInfinityOrInvalidValue</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="2">test/TestTimerIntegrated.c</td>
+<td>testInitShouldCallHardwareInit</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="1">test/TestTimerModel.c</td>
+<td>testUpdateTimeShouldDelegateToTaskScheduler</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="1">test/TestUsartBaudRateRegisterCalculator.c</td>
+<td>testCalculateBaudRateRegisterSettingShouldCalculateRegisterSettingAppropriately</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="3">test/TestUsartConductor.c</td>
+<td>testShouldInitializeHardwareWhenInitCalled</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldGetCurrentTemperatureAndTransmitIfSchedulerSaysItIsTime</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="8">test/adc/TestAdcConductor.c</td>
+<td>testInitShouldCallHardwareInit</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldNotDoAnythingIfItIsNotTime</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldNotPassAdcResultToModelIfSampleIsNotComplete</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldGetLatestSampleFromAdcAndPassItToModelAndStartNewConversionWhenItIsTime</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testJustHereToTest_Should_ProperlyPassAStructAndVerifyIt</td>
+<td>—</td>
+</tr>
+<tr>
+<td>test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected1</td>
+<td>—</td>
+</tr>
+<tr>
+<td>test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected2</td>
+<td>—</td>
+</tr>
+<tr>
+<td>test_AdcConductor_YetAnotherTest_Should_VerifyThatPointersToStructsAreTestable</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="2">test/TestUsartHardware.c</td>
+<td>testInitShouldConfigureUsartPeripheralByCallingConfiguratorAppropriately</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testTransmitStringShouldSendDesiredStringOutUsingUsart</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="4">test/TestUsartModel.c</td>
+<td>testGetBaudRateRegisterSettingShouldReturnAppropriateBaudRateRegisterSetting</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testGetFormattedTemperatureFormatsTemperatureFromCalculatorAppropriately</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldReturnErrorMessageUponInvalidTemperatureValue</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testShouldReturnWakeupMessage</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="2">test/TestUsartIntegrated.c</td>
+<td>testShouldInitializeHardwareWhenInitCalled</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="4">test/adc/TestAdcHardware.c</td>
+<td>testInitShouldDelegateToConfiguratorAndTemperatureSensor</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testGetSampleCompleteShouldReturn_FALSE_WhenTemperatureSensorSampleReadyReturns_FALSE</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testGetSampleCompleteShouldReturn_TRUE_WhenTemperatureSensorSampleReadyReturns_TRUE</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testGetSampleShouldDelegateToAdcTemperatureSensor</td>
+<td>—</td>
+</tr>
+<tr>
+<td rowspan="3">test/adc/TestAdcModel.c</td>
+<td>testDoGetSampleShouldReturn_FALSE_WhenTaskSchedulerReturns_FALSE</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testDoGetSampleShouldReturn_TRUE_WhenTaskSchedulerReturns_TRUE</td>
+<td>—</td>
+</tr>
+<tr>
+<td>testProcessInputShouldDelegateToTemperatureCalculatorAndPassResultToFilter</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

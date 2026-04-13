@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<testsuites tests="51" failures="0" time="0.157">
+  <testsuite name="test/TestExecutor" tests="2" failures="0" skipped="0" errors="0" time="0.007">
+    <testcase name="testInitShouldCallInitOfAllConductorsAndTheModel" time="0.000"/>
+    <testcase name="testRunShouldCallRunForEachConductorAndReturnTrueAlways" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestTaskScheduler" tests="8" failures="0" skipped="0" errors="0" time="0.006">
+    <testcase name="testShouldScheduleUsartTaskAfter1000ms" time="0.000"/>
+    <testcase name="testShouldClearUsartDoFlagAfterReported" time="0.000"/>
+    <testcase name="testShouldScheduleUsartTaskEvery1000ms" time="0.000"/>
+    <testcase name="testShouldScheduleUsartTaskOnlyOncePerPeriod" time="0.000"/>
+    <testcase name="testShouldScheduleAdcTaskAfter100ms" time="0.000"/>
+    <testcase name="testShouldClearAdcDoFlagAfterReported" time="0.000"/>
+    <testcase name="testShouldScheduleAdcTaskEvery100ms" time="0.000"/>
+    <testcase name="testShouldScheduleAdcTaskOnlyOncePerPeriod" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestTimerConductor" tests="2" failures="0" skipped="0" errors="0" time="0.005">
+    <testcase name="testInitShouldCallHardwareInit" time="0.000"/>
+    <testcase name="testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestTemperatureCalculator" tests="2" failures="0" skipped="0" errors="0" time="0.012">
+    <testcase name="testTemperatureCalculatorShouldCalculateTemperatureFromMillivolts" time="0.000"/>
+    <testcase name="testShouldReturnNegativeInfinityWhen_0_millivoltsInput" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestTimerHardware" tests="1" failures="0" skipped="0" errors="0" time="0.008">
+    <testcase name="testInitShouldDelegateAppropriatelyToConfigurator" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestMain" tests="1" failures="0" skipped="0" errors="0" time="0.009">
+    <testcase name="testMainShouldCallExecutorInitAndContinueToCallExecutorRunUntilHalted" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestModel" tests="1" failures="0" skipped="0" errors="0" time="0.012">
+    <testcase name="testInitShouldCallSchedulerAndTemperatureFilterInit" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestTemperatureFilter" tests="4" failures="0" skipped="0" errors="0" time="0.012">
+    <testcase name="testShouldInitializeTemeratureToInvalidValue" time="0.000"/>
+    <testcase name="testShouldInitializeTemperatureAfterCallToInit" time="0.000"/>
+    <testcase name="testShouldWeightEachSubsequentValueBy25PercentAfterInitialValue" time="0.000"/>
+    <testcase name="testShouldResetAverageIfPassedInfinityOrInvalidValue" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestTimerIntegrated" tests="2" failures="0" skipped="0" errors="0" time="0.008">
+    <testcase name="testInitShouldCallHardwareInit" time="0.000"/>
+    <testcase name="testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestTimerModel" tests="1" failures="0" skipped="0" errors="0" time="0.013">
+    <testcase name="testUpdateTimeShouldDelegateToTaskScheduler" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestUsartBaudRateRegisterCalculator" tests="1" failures="0" skipped="0" errors="0" time="0.010">
+    <testcase name="testCalculateBaudRateRegisterSettingShouldCalculateRegisterSettingAppropriately" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestUsartConductor" tests="3" failures="0" skipped="0" errors="0" time="0.006">
+    <testcase name="testShouldInitializeHardwareWhenInitCalled" time="0.000"/>
+    <testcase name="testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet" time="0.000"/>
+    <testcase name="testRunShouldGetCurrentTemperatureAndTransmitIfSchedulerSaysItIsTime" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/adc/TestAdcConductor" tests="8" failures="0" skipped="0" errors="0" time="0.006">
+    <testcase name="testInitShouldCallHardwareInit" time="0.000"/>
+    <testcase name="testRunShouldNotDoAnythingIfItIsNotTime" time="0.000"/>
+    <testcase name="testRunShouldNotPassAdcResultToModelIfSampleIsNotComplete" time="0.000"/>
+    <testcase name="testRunShouldGetLatestSampleFromAdcAndPassItToModelAndStartNewConversionWhenItIsTime" time="0.000"/>
+    <testcase name="testJustHereToTest_Should_ProperlyPassAStructAndVerifyIt" time="0.000"/>
+    <testcase name="test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected1" time="0.000"/>
+    <testcase name="test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected2" time="0.000"/>
+    <testcase name="test_AdcConductor_YetAnotherTest_Should_VerifyThatPointersToStructsAreTestable" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestUsartHardware" tests="2" failures="0" skipped="0" errors="0" time="0.008">
+    <testcase name="testInitShouldConfigureUsartPeripheralByCallingConfiguratorAppropriately" time="0.000"/>
+    <testcase name="testTransmitStringShouldSendDesiredStringOutUsingUsart" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestUsartModel" tests="4" failures="0" skipped="0" errors="0" time="0.010">
+    <testcase name="testGetBaudRateRegisterSettingShouldReturnAppropriateBaudRateRegisterSetting" time="0.000"/>
+    <testcase name="testGetFormattedTemperatureFormatsTemperatureFromCalculatorAppropriately" time="0.000"/>
+    <testcase name="testShouldReturnErrorMessageUponInvalidTemperatureValue" time="0.000"/>
+    <testcase name="testShouldReturnWakeupMessage" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/TestUsartIntegrated" tests="2" failures="0" skipped="0" errors="0" time="0.011">
+    <testcase name="testShouldInitializeHardwareWhenInitCalled" time="0.000"/>
+    <testcase name="testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/adc/TestAdcHardware" tests="4" failures="0" skipped="0" errors="0" time="0.006">
+    <testcase name="testInitShouldDelegateToConfiguratorAndTemperatureSensor" time="0.000"/>
+    <testcase name="testGetSampleCompleteShouldReturn_FALSE_WhenTemperatureSensorSampleReadyReturns_FALSE" time="0.000"/>
+    <testcase name="testGetSampleCompleteShouldReturn_TRUE_WhenTemperatureSensorSampleReadyReturns_TRUE" time="0.000"/>
+    <testcase name="testGetSampleShouldDelegateToAdcTemperatureSensor" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/adc/TestAdcModel" tests="3" failures="0" skipped="0" errors="0" time="0.006">
+    <testcase name="testDoGetSampleShouldReturn_FALSE_WhenTaskSchedulerReturns_FALSE" time="0.000"/>
+    <testcase name="testDoGetSampleShouldReturn_TRUE_WhenTaskSchedulerReturns_TRUE" time="0.000"/>
+    <testcase name="testProcessInputShouldDelegateToTemperatureCalculatorAndPassResultToFilter" time="0.000"/>
+  </testsuite>
+</testsuites>

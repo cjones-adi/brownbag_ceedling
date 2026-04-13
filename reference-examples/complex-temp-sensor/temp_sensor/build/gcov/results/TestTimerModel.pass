@@ -1,0 +1,19 @@
+---
+:source:
+  :file: test/TestTimerModel.c
+  :dirname: test
+  :basename: TestTimerModel.c
+:successes:
+- :test: testUpdateTimeShouldDelegateToTaskScheduler
+  :line: 21
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 1
+  :passed: 1
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.013273685000058322

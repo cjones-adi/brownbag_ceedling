@@ -1,0 +1,19 @@
+---
+:source:
+  :file: test/TestTimerHardware.c
+  :dirname: test
+  :basename: TestTimerHardware.c
+:successes:
+- :test: testInitShouldDelegateAppropriatelyToConfigurator
+  :line: 21
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 1
+  :passed: 1
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.00766183199993975

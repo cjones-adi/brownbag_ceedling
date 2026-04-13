@@ -1,0 +1,23 @@
+---
+:source:
+  :file: test/TestTemperatureCalculator.c
+  :dirname: test
+  :basename: TestTemperatureCalculator.c
+:successes:
+- :test: testTemperatureCalculatorShouldCalculateTemperatureFromMillivolts
+  :line: 24
+  :message: ''
+  :unity_test_time: 0
+- :test: testShouldReturnNegativeInfinityWhen_0_millivoltsInput
+  :line: 40
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 2
+  :passed: 2
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.011947609000117154

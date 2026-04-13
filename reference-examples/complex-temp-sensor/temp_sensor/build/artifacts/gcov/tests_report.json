@@ -1,0 +1,220 @@
+{
+  "FailedTests": [
+
+  ],
+  "PassedTests": [
+    {
+      "file": "test/TestExecutor.c",
+      "test": "testInitShouldCallInitOfAllConductorsAndTheModel"
+    },
+    {
+      "file": "test/TestExecutor.c",
+      "test": "testRunShouldCallRunForEachConductorAndReturnTrueAlways"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldScheduleUsartTaskAfter1000ms"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldClearUsartDoFlagAfterReported"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldScheduleUsartTaskEvery1000ms"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldScheduleUsartTaskOnlyOncePerPeriod"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldScheduleAdcTaskAfter100ms"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldClearAdcDoFlagAfterReported"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldScheduleAdcTaskEvery100ms"
+    },
+    {
+      "file": "test/TestTaskScheduler.c",
+      "test": "testShouldScheduleAdcTaskOnlyOncePerPeriod"
+    },
+    {
+      "file": "test/TestTimerConductor.c",
+      "test": "testInitShouldCallHardwareInit"
+    },
+    {
+      "file": "test/TestTimerConductor.c",
+      "test": "testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling"
+    },
+    {
+      "file": "test/TestTemperatureCalculator.c",
+      "test": "testTemperatureCalculatorShouldCalculateTemperatureFromMillivolts"
+    },
+    {
+      "file": "test/TestTemperatureCalculator.c",
+      "test": "testShouldReturnNegativeInfinityWhen_0_millivoltsInput"
+    },
+    {
+      "file": "test/TestTimerHardware.c",
+      "test": "testInitShouldDelegateAppropriatelyToConfigurator"
+    },
+    {
+      "file": "test/TestMain.c",
+      "test": "testMainShouldCallExecutorInitAndContinueToCallExecutorRunUntilHalted"
+    },
+    {
+      "file": "test/TestModel.c",
+      "test": "testInitShouldCallSchedulerAndTemperatureFilterInit"
+    },
+    {
+      "file": "test/TestTemperatureFilter.c",
+      "test": "testShouldInitializeTemeratureToInvalidValue"
+    },
+    {
+      "file": "test/TestTemperatureFilter.c",
+      "test": "testShouldInitializeTemperatureAfterCallToInit"
+    },
+    {
+      "file": "test/TestTemperatureFilter.c",
+      "test": "testShouldWeightEachSubsequentValueBy25PercentAfterInitialValue"
+    },
+    {
+      "file": "test/TestTemperatureFilter.c",
+      "test": "testShouldResetAverageIfPassedInfinityOrInvalidValue"
+    },
+    {
+      "file": "test/TestTimerIntegrated.c",
+      "test": "testInitShouldCallHardwareInit"
+    },
+    {
+      "file": "test/TestTimerIntegrated.c",
+      "test": "testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling"
+    },
+    {
+      "file": "test/TestTimerModel.c",
+      "test": "testUpdateTimeShouldDelegateToTaskScheduler"
+    },
+    {
+      "file": "test/TestUsartBaudRateRegisterCalculator.c",
+      "test": "testCalculateBaudRateRegisterSettingShouldCalculateRegisterSettingAppropriately"
+    },
+    {
+      "file": "test/TestUsartConductor.c",
+      "test": "testShouldInitializeHardwareWhenInitCalled"
+    },
+    {
+      "file": "test/TestUsartConductor.c",
+      "test": "testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet"
+    },
+    {
+      "file": "test/TestUsartConductor.c",
+      "test": "testRunShouldGetCurrentTemperatureAndTransmitIfSchedulerSaysItIsTime"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "testInitShouldCallHardwareInit"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "testRunShouldNotDoAnythingIfItIsNotTime"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "testRunShouldNotPassAdcResultToModelIfSampleIsNotComplete"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "testRunShouldGetLatestSampleFromAdcAndPassItToModelAndStartNewConversionWhenItIsTime"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "testJustHereToTest_Should_ProperlyPassAStructAndVerifyIt"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected1"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "test_AdcConductor_AlsoHereToTest_Should_ProperlyReturnAStructAsExpected2"
+    },
+    {
+      "file": "test/adc/TestAdcConductor.c",
+      "test": "test_AdcConductor_YetAnotherTest_Should_VerifyThatPointersToStructsAreTestable"
+    },
+    {
+      "file": "test/TestUsartHardware.c",
+      "test": "testInitShouldConfigureUsartPeripheralByCallingConfiguratorAppropriately"
+    },
+    {
+      "file": "test/TestUsartHardware.c",
+      "test": "testTransmitStringShouldSendDesiredStringOutUsingUsart"
+    },
+    {
+      "file": "test/TestUsartModel.c",
+      "test": "testGetBaudRateRegisterSettingShouldReturnAppropriateBaudRateRegisterSetting"
+    },
+    {
+      "file": "test/TestUsartModel.c",
+      "test": "testGetFormattedTemperatureFormatsTemperatureFromCalculatorAppropriately"
+    },
+    {
+      "file": "test/TestUsartModel.c",
+      "test": "testShouldReturnErrorMessageUponInvalidTemperatureValue"
+    },
+    {
+      "file": "test/TestUsartModel.c",
+      "test": "testShouldReturnWakeupMessage"
+    },
+    {
+      "file": "test/TestUsartIntegrated.c",
+      "test": "testShouldInitializeHardwareWhenInitCalled"
+    },
+    {
+      "file": "test/TestUsartIntegrated.c",
+      "test": "testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet"
+    },
+    {
+      "file": "test/adc/TestAdcHardware.c",
+      "test": "testInitShouldDelegateToConfiguratorAndTemperatureSensor"
+    },
+    {
+      "file": "test/adc/TestAdcHardware.c",
+      "test": "testGetSampleCompleteShouldReturn_FALSE_WhenTemperatureSensorSampleReadyReturns_FALSE"
+    },
+    {
+      "file": "test/adc/TestAdcHardware.c",
+      "test": "testGetSampleCompleteShouldReturn_TRUE_WhenTemperatureSensorSampleReadyReturns_TRUE"
+    },
+    {
+      "file": "test/adc/TestAdcHardware.c",
+      "test": "testGetSampleShouldDelegateToAdcTemperatureSensor"
+    },
+    {
+      "file": "test/adc/TestAdcModel.c",
+      "test": "testDoGetSampleShouldReturn_FALSE_WhenTaskSchedulerReturns_FALSE"
+    },
+    {
+      "file": "test/adc/TestAdcModel.c",
+      "test": "testDoGetSampleShouldReturn_TRUE_WhenTaskSchedulerReturns_TRUE"
+    },
+    {
+      "file": "test/adc/TestAdcModel.c",
+      "test": "testProcessInputShouldDelegateToTemperatureCalculatorAndPassResultToFilter"
+    }
+  ],
+  "IgnoredTests": [
+
+  ],
+  "Summary": {
+    "total_tests": 51,
+    "passed": 51,
+    "ignored": 0,
+    "failures": 0
+  }
+}

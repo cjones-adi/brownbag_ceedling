@@ -1,0 +1,121 @@
+# =========================================================================
+#   Ceedling - Test-Centered Build System for C
+#   ThrowTheSwitch.org
+#   Copyright (c) 2010-25 Mike Karlesky, Mark VanderVoord, & Greg Williams
+#   SPDX-License-Identifier: MIT
+# =========================================================================
+
+---
+:project:
+  # how to use ceedling. If you're not sure, leave this as `gem` and `?`
+  :which_ceedling: gem
+  :ceedling_version: ?
+
+  # optional features. If you don't need them, keep them turned off for performance
+  :use_mocks: TRUE
+  :use_test_preprocessor: :none
+  :use_deep_preprocessor: :none
+  :use_backtrace: :none
+  :use_decorators: :auto
+
+  # tweak the way ceedling handles automatic tasks
+  :build_root: build
+  :test_file_prefix: test_
+  :default_tasks:
+    - test:all
+
+  # performance options. If your tools start giving mysterious errors, consider
+  # dropping this to 1 to force single-tasking
+  :test_threads: 8
+  :compile_threads: 8
+
+# Plugins are optional Ceedling features which can be enabled
+:plugins:
+  :load_paths:
+    - "#{Ceedling.load_path}"
+  :enabled:
+    - stdout_pretty_tests_report
+    - module_generator
+    - raw_output_report
+
+# These paths are searched when looking for source files to pull into the build
+# see documentation for configuring these paths
+:paths:
+  :test:
+    - test/**
+  :source:
+    - src/**
+
+:defines:
+  :test:
+    - &common_defines []
+  :test_preprocess:
+    - *common_defines
+
+:cmock:
+  :mock_prefix: mock_
+  :when_no_prototypes: :warn
+  :enforce_strict_ordering: TRUE
+  :plugins:
+    - :ignore
+    - :callback
+  :treat_as:
+    uint8:    HEX8
+    uint16:   HEX16
+    uint32:   UINT32
+    int8:     INT8
+    bool:     UINT8
+
+# Add -gcov to the plugins list to make sure of the gcov plugin
+# You will need to have gcov and gcovr both installed to make it work.
+# For more information on these options, see docs in plugins/gcov
+:gcov:
+  :reports:
+    - HtmlDetailed
+  :gcovr:
+    :html_medium_threshold: 75
+    :html_high_threshold: 90
+
+#:tools:
+# Ceedling defaults to using gcc for compiling, linking, etc.
+# As [:tools] is blank, gcc will be used (so long as it's in your system path)
+# See documentation to configure a given toolchain for use
+
+# LIBRARIES
+# These libraries are automatically injected into the build process. Those specified as
+# common will be used in all types of builds. Otherwise, libraries can be injected in just
+# tests or releases. These options are MERGED with the options in supplemental
+# yaml files.
+:libraries:
+  :placement: :end
+  :flag: "-l${1}"
+  :path_flag: "-L ${1}"
+  :system: []    # for example, you might list 'm' to grab the math library
+  :test: []
+  :release: []
+
+:flags:
+  :release:
+    :compile:
+      :*:
+        - -std=c99
+        - -pedantic
+        - -Wall
+        - -Wextra
+        - -Werror
+        - ${1}
+  :test:
+    :compile:
+      :*:
+        - -std=c99
+        - -pedantic
+        - -Wall
+        - -Wextra
+        - -Werror
+        - ${1}
+
+:extension:
+  :executable: .out
+
+:unity:
+  :use_param_tests: TRUE

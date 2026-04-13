@@ -1,0 +1,7 @@
+---
+- build/vendor/unity/src/unity.h
+- src/Types.h
+- src/UsartConductor.h
+- MockUsartModel.h
+- MockUsartHardware.h
+- MockTaskScheduler.h

@@ -1,0 +1,6 @@
+---
+- build/vendor/unity/src/unity.h
+- src/Types.h
+- src/AdcHardware.h
+- MockAdcHardwareConfigurator.h
+- MockAdcTemperatureSensor.h

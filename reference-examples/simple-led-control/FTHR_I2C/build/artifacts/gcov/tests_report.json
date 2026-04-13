@@ -1,0 +1,44 @@
+{
+  "FailedTests": [
+
+  ],
+  "PassedTests": [
+    {
+      "file": "test/test_led_control.c",
+      "test": "test_led_control_init_should_succeed"
+    },
+    {
+      "file": "test/test_led_control.c",
+      "test": "test_led_control_set_blue_on"
+    },
+    {
+      "file": "test/test_led_control.c",
+      "test": "test_led_control_set_blue_off"
+    },
+    {
+      "file": "test/test_led_control.c",
+      "test": "test_led_control_set_red_on"
+    },
+    {
+      "file": "test/test_led_control.c",
+      "test": "test_led_control_toggle_blue"
+    },
+    {
+      "file": "test/test_led_control.c",
+      "test": "test_led_control_set_both_leds"
+    },
+    {
+      "file": "test/test_led_control.c",
+      "test": "test_led_control_get_initial_state"
+    }
+  ],
+  "IgnoredTests": [
+
+  ],
+  "Summary": {
+    "total_tests": 7,
+    "passed": 7,
+    "ignored": 0,
+    "failures": 0
+  }
+}

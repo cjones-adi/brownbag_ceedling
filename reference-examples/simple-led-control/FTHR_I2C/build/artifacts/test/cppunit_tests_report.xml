@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TestRun>
+  <FailedTests/>
+  <SuccessfulTests>
+    <Test id="1">
+      <Name>test/test_led_control.c::test_led_control_init_should_succeed</Name>
+    </Test>
+    <Test id="2">
+      <Name>test/test_led_control.c::test_led_control_set_blue_on</Name>
+    </Test>
+    <Test id="3">
+      <Name>test/test_led_control.c::test_led_control_set_blue_off</Name>
+    </Test>
+    <Test id="4">
+      <Name>test/test_led_control.c::test_led_control_set_red_on</Name>
+    </Test>
+    <Test id="5">
+      <Name>test/test_led_control.c::test_led_control_toggle_blue</Name>
+    </Test>
+    <Test id="6">
+      <Name>test/test_led_control.c::test_led_control_set_both_leds</Name>
+    </Test>
+    <Test id="7">
+      <Name>test/test_led_control.c::test_led_control_get_initial_state</Name>
+    </Test>
+  </SuccessfulTests>
+  <IgnoredTests/>
+  <Statistics>
+    <Tests>7</Tests>
+    <Ignores>0</Ignores>
+    <FailuresTotal>0</FailuresTotal>
+    <Errors>0</Errors>
+    <Failures>0</Failures>
+  </Statistics>
+</TestRun>

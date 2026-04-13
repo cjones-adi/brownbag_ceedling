@@ -1,0 +1,23 @@
+---
+:source:
+  :file: test/TestTimerConductor.c
+  :dirname: test
+  :basename: TestTimerConductor.c
+:successes:
+- :test: testInitShouldCallHardwareInit
+  :line: 23
+  :message: ''
+  :unity_test_time: 0
+- :test: testRunShouldGetSystemTimeAndPassOnToModelForEventScheduling
+  :line: 30
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 2
+  :passed: 2
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.005465003000153956

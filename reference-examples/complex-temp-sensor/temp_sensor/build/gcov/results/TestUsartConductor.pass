@@ -1,0 +1,27 @@
+---
+:source:
+  :file: test/TestUsartConductor.c
+  :dirname: test
+  :basename: TestUsartConductor.c
+:successes:
+- :test: testShouldInitializeHardwareWhenInitCalled
+  :line: 23
+  :message: ''
+  :unity_test_time: 0
+- :test: testRunShouldNotDoAnythingIfSchedulerSaysItIsNotTimeYet
+  :line: 33
+  :message: ''
+  :unity_test_time: 0
+- :test: testRunShouldGetCurrentTemperatureAndTransmitIfSchedulerSaysItIsTime
+  :line: 40
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 3
+  :passed: 3
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.006258656999989398
