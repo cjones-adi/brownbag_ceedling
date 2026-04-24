@@ -16,6 +16,7 @@ This section provides the foundational knowledge you need before diving into han
 
 ### 3. 🤔 The "Why" Behind Testing
 - **why-unit-testing.md** - Real-world cases where unit tests prevent disasters
+- **unit-testing-in-sdlc.md** - How unit testing fits into every SDLC phase, methodology comparison, ROI, and team adoption roadmap
 - **embedded-testing-patterns.md** - Common patterns specific to embedded development
 
 ## 🎯 Learning Outcomes
