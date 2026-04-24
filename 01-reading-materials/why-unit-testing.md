@@ -71,6 +71,24 @@ if ((get_system_time_ms() - last_run_time) > 86400000) {
 
 ✳️ **The Benefit:** By mocking `get_system_time_ms()`, my unit test can simulate 24 hours passing in exactly 1 millisecond. I test the real code, with the real math, instantly.
 
+## 🔥 Case 5: The Coverage Gap (What You're Not Testing)
+
+✅ **The Junior View:** "I ran the code and it didn't crash, so it's fine."
+
+❌ **The Senior Reality:** A single happy-path run leaves entire branches, edge-case arguments, and every failure handler completely unexercised.
+
+✳️ **The Benefit:** A well-structured test suite targets all three layers:
+
+| Coverage Target | What Gets Caught |
+|---|---|
+| **Code paths** | Untested `else` branches and `switch` cases that silently misbehave |
+| **Argument bounds** | Off-by-one errors, integer overflow, zero-division, NULL dereference |
+| **Failure cases** | Error-handling logic that has never actually been executed |
+
+Closing this gap leads to **faster firmware stabilisation**, increased productivity across the team, and fewer functional bugs, control-flow bugs, and fatal field issues.
+
+> **Testing on target hardware is slow and inconvenient.** Covering all three layers manually — re-flashing for every boundary value and every injected fault — is practically impossible. Unit tests on the host do it in seconds.
+
 ## 🎯 Key Takeaways
 
 > **Your compiler says your code is syntactically correct. Your unit tests say your code is behaviorally correct.**
@@ -79,6 +97,7 @@ if ((get_system_time_ms() - last_run_time) > 86400000) {
 - Don't wait for hardware to arrive. **Develop and test logic** with mocks first.
 - Test the **impossible scenarios** that you can't reproduce on real hardware.
 - Validate **boundary conditions** automatically instead of manually.
+- Cover **all three layers**: code paths, argument bounds, and failure cases — not just the happy path.
 
 ## 💭 Reflection Questions
 

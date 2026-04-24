@@ -15,6 +15,7 @@ This section provides the foundational knowledge you need before diving into han
 - **cexceptions-basics.md** - Exception handling in embedded tests
 
 ### 3. 🤔 The "Why" Behind Testing
+- **what-is-unit-testing.md** - Definition, host vs. target testing, unit test components, and coverage goals
 - **why-unit-testing.md** - Real-world cases where unit tests prevent disasters
 - **unit-testing-in-sdlc.md** - How unit testing fits into every SDLC phase, methodology comparison, ROI, and team adoption roadmap
 - **embedded-testing-patterns.md** - Common patterns specific to embedded development
