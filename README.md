@@ -1,6 +1,8 @@
 # 🧪 Embedded Unit Testing - Brown Bag Learning Sessions
 
-Welcome to the comprehensive unit testing education program for embedded system developers! This repository follows a proven **10/20/70 learning methodology** using the Ceedling framework.
+Welcome to "Zero to Ceedling"!
+
+This learning program aims to teach Unit Testing Using the Ceedling Framework to SDP Phils.
 
 ## 🎯 Learning Methodology
 
@@ -38,12 +40,12 @@ Reusable templates, project scaffolding, and common testing patterns.
 
 By the end of this program, you will:
 
-✅ Understand why unit testing prevents logic bombs in production
-✅ Write tests for boundary conditions and edge cases
-✅ Mock hardware interfaces to test without physical devices
-✅ Test error handling and "impossible" failure scenarios
-✅ Apply Test-Driven Development (TDD) to embedded projects
-✅ Integrate testing into your development workflow
+- ✅ Understand why unit testing prevents logic bombs in production
+- ✅ Write tests for boundary conditions and edge cases
+- ✅ Mock hardware interfaces to test without physical devices
+- ✅ Test error handling and "impossible" failure scenarios
+- ✅ Apply Test-Driven Development (TDD) to embedded projects
+- ✅ Integrate testing into your development workflow
 
 ## 💡 Real-World Impact
 
