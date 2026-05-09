@@ -4,7 +4,8 @@
 
 We've all said it. You flash the board, poke it with a scope, observe the desired output, and assume the job is done. But you didn't test the code; you just observed it succeeding once.
 
-If you are writing complex firmware (especially for Automotive, Medical, or IoT), you are playing a dangerous game without Unit Tests (using tools like Unity, CppUTest, or Google Test).
+
+If you are writing complex firmware (especially for Automotive, Medical, or IoT), you are playing a dangerous game without unit tests.
 
 **Static analysis finds bugs in your code grammar. Unit testing finds bugs in your logic behavior.**
 
@@ -34,9 +35,10 @@ if (temperature > 40 && voltage >= 4.2) {
 
 ❌ **The Senior Reality:** Hardware delays hold back the entire software schedule.
 
-✳️ **The Benefit of Unit Tests (The Mocking Magic):** We can write 95% of the logic behavior without touching hardware. Using "Mocks" (like Ceedling/CMock), we simulate the I2C interface.
-- I can write a unit test to prove the driver parses positive temperatures correctly.
-- I can write a test that forces the mock I2C read to "timeout" to ensure my driver handles I2C bus faults safely.
+
+✳️ **The Benefit of Unit Tests:** We can write most of the logic behavior without touching hardware. By simulating hardware interactions, we can:
+    - Write a unit test to prove the driver parses positive temperatures correctly.
+    - Write a test that forces a simulated I2C read to "timeout" to ensure the driver handles I2C bus faults safely.
 
 When the hardware PCB finally arrives weeks later, I know my software logic is solid, and I only have to focus on electrical integration.
 
@@ -54,7 +56,8 @@ if (I2C_Write(EEPROM_ADDR, data) == I2C_BUS_HUNG) {
 
 ❌ **The Senior Reality:** If you cannot execute the error-handling path during testing, it is guaranteed to Hard Fault in the field when the physical hardware eventually degrades.
 
-✳️ **The Benefit:** Using Mocks, I can force `I2C_Write()` to return `I2C_BUS_HUNG` on demand. I can prove my recovery logic works perfectly, without having to physically short-circuit the SDA/SCL pins on my board!
+
+✳️ **The Benefit:** By simulating hardware failures, I can force `I2C_Write()` to return `I2C_BUS_HUNG` on demand. I can prove my recovery logic works perfectly, without having to physically short-circuit the SDA/SCL pins on my board!
 
 ## 🔥 Case 4: The "Wait 24 Hours" Timeout (Time-Dependent Logic)
 
@@ -69,7 +72,8 @@ if ((get_system_time_ms() - last_run_time) > 86400000) {
 
 ❌ **The Senior Reality:** You just shipped code that you never actually tested. Did you account for a 32-bit integer overflow in your 24-hour math?
 
-✳️ **The Benefit:** By mocking `get_system_time_ms()`, my unit test can simulate 24 hours passing in exactly 1 millisecond. I test the real code, with the real math, instantly.
+
+✳️ **The Benefit:** By simulating the passage of time, my unit test can simulate 24 hours passing in exactly 1 millisecond. I test the real code, with the real math, instantly.
 
 ## 🔥 Case 5: The Coverage Gap (What You're Not Testing)
 
@@ -87,14 +91,14 @@ if ((get_system_time_ms() - last_run_time) > 86400000) {
 
 Closing this gap leads to **faster firmware stabilisation**, increased productivity across the team, and fewer functional bugs, control-flow bugs, and fatal field issues.
 
-> **Testing on target hardware is slow and inconvenient.** Covering all three layers manually — re-flashing for every boundary value and every injected fault — is practically impossible. Unit tests on the host do it in seconds.
+> **Testing on target hardware is slow and inconvenient.** Covering all three layers manually — re-flashing for every boundary value and every injected fault — is practically impossible. Unit tests in isolation do it in seconds.
 
 ## 🎯 Key Takeaways
 
 > **Your compiler says your code is syntactically correct. Your unit tests say your code is behaviorally correct.**
 
-- Stop hoping your error handlers work. **Prove it** on your PC before it ever touches the silicon.
-- Don't wait for hardware to arrive. **Develop and test logic** with mocks first.
+- Stop hoping your error handlers work. **Prove it** before your code ever touches real hardware.
+- Don't wait for hardware to arrive. **Develop and test logic** with simulated inputs and outputs first.
 - Test the **impossible scenarios** that you can't reproduce on real hardware.
 - Validate **boundary conditions** automatically instead of manually.
 - Cover **all three layers**: code paths, argument bounds, and failure cases — not just the happy path.
