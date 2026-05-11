@@ -1,262 +1,274 @@
-# 🔗 Demo 5: Quick Reference Script
+# 🔗 Demo 5: Integration Testing – Full Safety Charging Pipeline
 
 **Total Time: 45 minutes**
+**Modules:** `led_control` + `temp_sensor` + `adc_monitor` — end-to-end
 
-## 📝 Opening Problem (5 min)
+---
+
+## 📝 Opening (3 min)
+
 ```
-"Show of hands: How many times heard this?"
+"Show of hands: How many times have you seen this?"
 
-👩‍💻 Dev A: "My sensor driver unit tests all pass!"
-👨‍💻 Dev B: "My display controller unit tests all pass!"
-🤖 Integration: "System crashes when we put them together!"
+  Dev A: "My LED module unit tests all pass!"
+  Dev B: "My temperature sensor unit tests all pass!"
+  Dev C: "My ADC monitor unit tests all pass!"
+  Integration: "When we put them all together, the safety logic doesn't fire."
 
-What Unit Tests Miss:
-🔄 Data flow between modules (format mismatches)
-⏰ Timing relationships (update rates, sync)
-🧠 Memory interactions (shared buffers, conflicts)
-📞 Communication protocols (message formats, errors)
-🎯 System-level behavior (end-to-end scenarios)
-```
-
-## 🏗️ Testing Pyramid (5 min)
-
-### Traditional vs Embedded Reality
-```
-Traditional:                 Embedded:
-    /\                          /\
-   /  \   System (5%)          /  \   Hardware-in-Loop (5%)
-  /____\                      /____\
- /      \ Integration (20%)   /      \ Integration (25%)
-/________\                   /________\
-/        \ Unit (75%)       /        \ Unit (70%)
+What unit tests individually miss:
+  - Data format agreements between modules (millideg? raw counts? degrees?)
+  - Error propagation — does an I2C failure prevent the LED from updating?
+  - The combined condition — both temperature AND voltage must be read correctly
+  - The sequence — what if adc_monitor_init() is never called?
 ```
 
-### Why More Integration in Embedded?
-- **Complex interactions** - HAL, real-time, interrupts
-- **Timing dependencies** - Sampling rates, timeouts, deadlines
-- **Safety requirements** - Fail-safe, recovery, compliance
+---
 
-## 🌡️ System Architecture (3 min)
+## 🏗️ The Full System Architecture (3 min)
+
 ```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Sensor    │───▶│  Processor  │───▶│   Logger    │───▶│   Display   │
-│   Driver    │    │    Filter   │    │   Buffer    │    │ Controller  │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
-
-BME280 @ 1Hz  →  Moving Average  →  Ring Buffer   →  LCD @ 1Hz
-                 3-sample filter    100 readings
-
-Integration Points (Where Bugs Hide):
-- Data format between sensor and filter
-- Update rate synchronization
-- Buffer overflow handling
-- Error propagation through pipeline
-```
-
-## ⚡ Setup (2 min)
-```bash
-mkdir demo_temp_monitor_integration
-cd demo_temp_monitor_integration
-ceedling new demo_temp_monitor_integration
-cd demo_temp_monitor_integration
+┌─────────────────┐    ┌─────────────────┐    ┌───────────────────┐
+│  temp_sensor    │    │  adc_monitor    │    │   led_control     │
+│                 │    │                 │    │                   │
+│ temp_sensor_    │    │ adc_monitor_    │    │ red_led_on()      │
+│   read(mdeg)    │    │   read_voltage  │    │ green_led_on()    │
+│                 │    │   (mV)          │    │ led_control_get() │
+└────────┬────────┘    └────────┬────────┘    └────────┬──────────┘
+         │                      │                      │
+         └──────────────────────┴──────────────────────┘
+                                │
+                         Safety Logic
+                    (temperature > 40000
+                     AND voltage >= 4200)
+                                │
+                         Green LED = ON
+                      ("Stop Charging" signal)
 ```
 
-## 🔧 Module Interfaces (5 min)
+In `main.c`, this loop runs continuously.
+In integration tests, we drive the same logic without a board.
+
+---
+
+## 🎯 What Integration Tests Add (3 min)
+
+| Question | Unit Tests | Integration Tests |
+|---|---|---|
+| Does `led_control` set/clear correctly? | ✅ | ✅ |
+| Does `temp_sensor` decode bytes correctly? | ✅ | ✅ |
+| Does an I2C error prevent the LED from turning on? | ❌ | ✅ |
+| Does the safety logic fire with real module outputs? | ❌ | ✅ |
+| Does the system stay safe if `adc_monitor_init()` fails? | ❌ | ✅ |
+| Is the data unit agreement correct (millideg, mV)? | ❌ | ✅ |
+
+---
+
+## 🔍 Review the module interfaces before writing tests (5 min)
+
 ```c
-// sensor_driver.h
-typedef enum { SENSOR_OK, SENSOR_COMM_ERROR, SENSOR_NOT_READY } sensor_status_t;
-sensor_status_t sensor_read_temperature(float* temperature_celsius);
+// temp_sensor.h
+int temp_sensor_init(void);
+int temp_sensor_read(int32_t *temp_out);   // millidegrees C
 
-// temp_filter.h
-typedef struct { float samples[3]; int current_index; int sample_count; } temp_filter_t;
-float temp_filter_update(temp_filter_t* filter, float new_sample);
+// adc_monitor.h
+int adc_monitor_init(void);
+int adc_monitor_read_voltage(uint32_t *voltage_out);  // millivolts
 
-// temp_logger.h
-typedef struct { float readings[100]; uint32_t timestamps[100]; int write_index; } temp_logger_t;
-void temp_logger_add_reading(temp_logger_t* logger, float temp, uint32_t timestamp);
-
-// temp_display.h
-typedef enum { TEMP_TREND_STABLE, TEMP_TREND_RISING, TEMP_TREND_FALLING } temp_trend_t;
-void temp_display_update(float current, float average, temp_trend_t trend);
+// led_control.h
+int  led_control_init(void);
+int  red_led_on(void);
+int  green_led_on(void);
+bool led_control_get(led_color_t color);
 ```
 
-## 🧪 Unit Tests First (5 min)
+Point out the unit agreement:
+- Temperature: `int32_t` millidegrees — threshold is `40000`
+- Voltage: `uint32_t` millivolts — threshold is `4200`
+- Same units used everywhere: in the sensor API, in the tests, in `main.c`
+
+---
+
+## 🧪 Integration Test: Happy Path — Below Threshold (5 min)
+
+Create `test/test_safety_pipeline.c`:
+
 ```c
-// test/test_temp_filter.c - Establish baseline functionality
-void test_temp_filter_should_initialize_to_empty_state(void) {
-    temp_filter_t filter;
-    temp_filter_init(&filter);
-    TEST_ASSERT_EQUAL(0, filter.sample_count);
+#include "unity.h"
+#include "led_control.h"
+#include "mock_i2c_hal.h"    // CMock: controls temp_sensor's I2C calls
+#include "temp_sensor.h"
+#include "adc_monitor.h"     // Note: adc_monitor uses real MXC ADC in fw build;
+                              //       in TEST build we supply a stub or mock
+
+/* MAX31889 encoding for 25 °C: raw=5000=0x1388, millideg=25000 */
+static int fake_temp_25C(uint8_t dev_addr,
+                          const uint8_t *tx, uint8_t tx_len,
+                          uint8_t *rx, uint8_t rx_len, int n)
+{
+    rx[0] = 0x13u; rx[1] = 0x88u;
+    return I2C_SUCCESS;
 }
 
-void test_temp_filter_should_compute_moving_average_when_full(void) {
-    temp_filter_t filter;
-    temp_filter_init(&filter);
-
-    temp_filter_update(&filter, 20.0f);
-    temp_filter_update(&filter, 25.0f);
-    float result = temp_filter_update(&filter, 30.0f);
-
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, 25.0f, result);  // Average of 20,25,30
+void setUp(void)
+{
+    mock_i2c_hal_Init();
+    led_control_init();
+    temp_sensor_init();
 }
-```
 
-**Say:** "Unit tests prove individual components work. Now let's test integration..."
-
-## 🔗 Integration Tests (15 min)
-
-### Complete Pipeline Test (8 min)
-```c
-// test/test_temp_monitor_integration.c
-#include "mock_i2c_hal.h"
-
-void test_complete_temperature_pipeline_should_process_correctly(void) {
-    // Arrange - Mock sensor return
-    uint8_t temp_data[] = {0x80, 0x00, 0x00};  // 25.0°C in BME280 format
-    i2c_read_ExpectAndReturn(BME280_ADDR, BME280_TEMP_REG, NULL, 3, I2C_OK);
-    i2c_read_ReturnMemThruPtr_data(temp_data, 3);
-
-    // Act - Run complete pipeline
-    float raw_temp;
-    sensor_read_temperature(&raw_temp);
-    float filtered = temp_filter_update(&filter, raw_temp);
-    temp_logger_add_reading(&logger, filtered, timestamp);
-    float average = temp_logger_get_average(&logger, 1);
-    temp_display_update(filtered, average, TEMP_TREND_STABLE);
-
-    // Assert - End-to-end verification
-    TEST_ASSERT_FLOAT_WITHIN(0.5f, 25.0f, filtered);
-    TEST_ASSERT_EQUAL(1, logger.count);
+void tearDown(void)
+{
+    mock_i2c_hal_Verify();
+    mock_i2c_hal_Destroy();
 }
-```
 
-### Error Propagation Test (4 min)
-```c
-void test_system_should_handle_sensor_errors_gracefully(void) {
-    // Arrange - Force communication failure
-    i2c_read_ExpectAndReturn(BME280_ADDR, BME280_TEMP_REG, NULL, 3, I2C_TIMEOUT);
+void test_pipeline_no_alarm_when_both_below_threshold(void)
+{
+    // Arrange
+    i2c_hal_write_read_StubWithCallback(fake_temp_25C);  // 25 °C
 
-    // Act
-    sensor_status_t result = sensor_read_temperature(&temperature);
+    // Act – replicate the main.c loop
+    int32_t  temp_mdeg = 0;
+    uint32_t volt_mv   = 3900;   // 3.9 V – below threshold
 
-    // Assert - Error handled gracefully
-    TEST_ASSERT_EQUAL(SENSOR_COMM_ERROR, result);
-    // Verify error propagates to display
-    temp_display_show_error("Sensor Communication Error");
-}
-```
+    red_led_on();
+    temp_sensor_read(&temp_mdeg);
 
-### High Frequency Test (3 min)
-```c
-void test_system_maintains_integrity_under_rapid_updates(void) {
-    // Arrange - Multiple rapid readings
-    uint8_t readings[][3] = { {0x80,0,0}, {0x81,0,0}, {0x82,0,0} };
-
-    // Act - Process multiple readings rapidly
-    for (int i = 0; i < 3; i++) {
-        i2c_read_ExpectAndReturn(...);
-        // Process reading through pipeline
+    if (temp_mdeg > 40000 && volt_mv >= 4200) {
+        green_led_on();
     }
 
-    // Assert - Data integrity maintained
-    TEST_ASSERT_EQUAL(3, logger.count);
-    TEST_ASSERT_TRUE(temp_filter_is_stable(&filter));
+    // Assert
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_RED));
+    TEST_ASSERT_FALSE(led_control_get(LED_COLOR_GREEN));
+    TEST_ASSERT_EQUAL_INT32(25000, temp_mdeg);
 }
 ```
 
-**Say:** "Integration testing reveals data flow, error propagation, timing behavior!"
-
-## 📊 What Integration Tests Revealed (5 min)
+```bash
+ceedling test:path[test_safety_pipeline]
 ```
-✅ Integration Tests Found:
-- Data format issues (units, precision, endianness)
-- Error propagation paths (how failures cascade)
-- Resource management (buffer overflow handling)
-- System resilience (recovery from failures)
-
-❌ These Were Missed by Unit Tests:
-- Module interaction bugs
-- Timing dependency issues
-- Resource sharing conflicts
-- System-level error scenarios
-```
-
-## 🎯 Testing Strategy (5 min)
-
-### When to Write Integration Tests
-```
-✅ Write Integration Tests When:
-🔄 Data flows between modules
-⏰ Timing dependencies exist
-🧠 Shared resources are used
-🛡️ System-level behavior matters
-
-❌ Avoid Integration Tests When:
-- Pure algorithm testing (use unit tests)
-- Simple data transformations
-- Independent utility functions
-- Complex setup outweighs value
-```
-
-### Optimal Balance
-```
-⚖️ Testing Strategy:
-70% Unit Tests     - Fast feedback, easy debugging
-25% Integration    - Critical interactions
-5% System Tests    - End-to-end validation
-
-Too Few Integration → Modules work alone, fail together
-Too Many Integration → Slow feedback, hard to debug
-```
-
-### Integration Patterns
-```
-📊 Pipeline Testing:     Input → A → B → C → Output
-🔄 State Machine:        Event → State → Action → Hardware
-📞 Protocol Stack:       App → Transport → Network → Physical
-⚡ Real-Time:           Interrupt → Handler → Task → Response
-```
-
-## 💬 Discussion (5 min)
-
-### Key Takeaways
-- **Integration ≠ replacement** for unit tests - both needed
-- **Test interactions**, not implementations
-- **Balance is crucial** - optimize for feedback speed
-- **Embedded needs more** integration testing than typical software
-
-### Common Questions
-**"Integration tests too slow?"** → "Critical interactions justify cost"
-**"Unit tests catch everything?"** → "Unit tests miss interaction bugs"
-**"Replace unit tests?"** → "Both needed for comprehensive coverage"
-
-### Real-World Challenges
-- Hardware simulation complexity
-- Real-time timing constraints
-- Resource limitation testing
-- Power management interactions
 
 ---
 
-## 🎯 Instructor Notes
+## 🧪 Integration Test: Safety Fires — Both Thresholds (5 min)
 
-### Key Messages
-- **Unit tests** prove components work individually
-- **Integration tests** prove they work together
-- **Both essential** for reliable embedded systems
-- **Balance** prevents slow feedback cycles
+```c
+/* MAX31889 encoding for 41 °C: raw=8200=0x2008, millideg=41000 */
+static int fake_temp_41C(uint8_t dev_addr,
+                          const uint8_t *tx, uint8_t tx_len,
+                          uint8_t *rx, uint8_t rx_len, int n)
+{
+    rx[0] = 0x20u; rx[1] = 0x08u;
+    return I2C_SUCCESS;
+}
 
-### Demo Tips
-- **Start with unit baseline** - show what they establish
-- **Show integration failures** that unit tests miss
-- **Keep examples realistic** to embedded development
-- **Emphasize balance** - not replacement strategy
+void test_pipeline_alarm_fires_when_both_thresholds_exceeded(void)
+{
+    // Arrange
+    i2c_hal_write_read_StubWithCallback(fake_temp_41C);  // 41 °C
 
-### Handle Questions
-**"Too complex to set up?"** → "Start with critical interfaces"
-**"How much integration?"** → "Focus on highest-risk interactions"
-**"When do I need this?"** → "When modules must work together"
+    // Act
+    int32_t  temp_mdeg = 0;
+    uint32_t volt_mv   = 4200;   // exactly at voltage threshold (>= triggers)
+
+    red_led_on();
+    temp_sensor_read(&temp_mdeg);
+
+    if (temp_mdeg > 40000 && volt_mv >= 4200) {
+        green_led_on();
+    }
+
+    // Assert
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_RED));
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_GREEN));   // stop charging
+    TEST_ASSERT_EQUAL_INT32(41000, temp_mdeg);
+}
+```
+
+**Say:** "We just drove the entire pipeline: I2C bytes → millideg → safety condition → LED state.
+No hardware. This is what `main.c` does on the board — we proved it works before flashing."
 
 ---
 
-**End Goal**: Attendees understand integration testing complements, not replaces, unit testing!
+## 🧪 Integration Test: I2C Error Does Not Set Green LED (5 min)
+
+```c
+void test_pipeline_i2c_error_leaves_green_led_off(void)
+{
+    // Arrange – sensor unreachable
+    i2c_hal_write_read_StubWithCallback(/* fake_i2c_timeout from demo 2 */ NULL);
+    // Use ExpectAndReturn for clarity:
+    i2c_hal_write_read_ExpectAnyArgsAndReturn(I2C_TIMEOUT);
+
+    // Act
+    int32_t  temp_mdeg = 99999;   // sentinel
+    uint32_t volt_mv   = 4500;    // voltage is above threshold
+
+    red_led_on();
+    int ret = temp_sensor_read(&temp_mdeg);
+
+    // Only apply safety logic if read succeeded
+    if (ret == 0 && temp_mdeg > 40000 && volt_mv >= 4200) {
+        green_led_on();
+    }
+
+    // Assert – I2C error must not cause a false alarm
+    TEST_ASSERT_EQUAL_INT(I2C_TIMEOUT, ret);
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_RED));
+    TEST_ASSERT_FALSE(led_control_get(LED_COLOR_GREEN));  // no false alarm
+    TEST_ASSERT_EQUAL_INT32(99999, temp_mdeg);            // output untouched
+}
+```
+
+**Say:** "Unit tests proved the sensor handles timeout correctly. Integration tests prove
+the *system* does the right thing with that timeout — it does not misfire the alarm."
+
+---
+
+## ✅ Run Full Suite (1 min)
+
+```bash
+ceedling test:all
+```
+
+All unit + integration tests pass.
+
+Optionally show coverage:
+```bash
+ceedling gcov:all
+# Open build/artifacts/gcov/index.html
+```
+
+---
+
+## 🏁 Demo Series Wrap-Up (3 min)
+
+| Demo | What We Learned |
+|------|----------------|
+| **01 Simple Start** | Tests run on the host in milliseconds with no hardware |
+| **02 Mocking Hardware** | CMock replaces real I2C so any response can be injected |
+| **03 TDD** | Tests written first become living requirements |
+| **04 Boundary Conditions** | Exact threshold semantics and silent integer overflow caught by tests |
+| **05 Integration** | End-to-end pipeline validation before the board is touched |
+
+**Closing:**
+```
+"The full test suite for this safety charging demo runs in under a second.
+ On the board, a single flash + observe cycle takes 30–60 seconds.
+ For 50 test cases that is a 25–50× speed difference.
+
+ More importantly: the I2C bus-hung scenario, the 202 °C overflow,
+ and the 40000 millideg exact boundary cannot be reliably triggered
+ on hardware at all.  Unit and integration tests are the only way to
+ prove those paths work."
+```
+
+---
+
+## �� Key Takeaways
+
+- ✅ **Integration tests validate cross-module data agreements** — units, formats, return codes
+- ✅ **Error propagation belongs in integration tests** — does the system respond correctly when one module fails?
+- ✅ **The full Ceedling stack** — Unity assertions + CMock mocks + gcov coverage — runs on any CI server
+- ✅ **Proceed to the hands-on exercises** in `03-hands-on-exercises/` to apply these patterns yourself

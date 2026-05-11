@@ -1,271 +1,265 @@
-# ⚠️ Demo 4: Quick Reference Script
+# ⚠️ Demo 4: Boundary Conditions & Integer Overflow
 
 **Total Time: 45 minutes**
+**Modules under test:** Safety threshold boundaries + `temp_sensor_convert_raw` overflow bug
 
-## 📝 Opening Horror Story (5 min)
+---
+
+## 📝 Opening (3 min)
+
 ```
-"$50 million boundary bug story:"
+"From Demo 3, our safety condition is:
+   temperature > 40000  AND  voltage >= 4200
 
-// The infamous safety system code
-if (temperature > 40 && voltage >= 4.2) {
-    emergency_shutdown();
+Question: What happens at temperature = 40000 exactly?
+          What about 39999? 40001?
+
+And: The MAX31889 ADC raw value gets converted using a formula
+     from the Linux kernel lt8460 driver.  That formula has a bug.
+     The bug lets a 202 °C battery read as 5 °C.
+     A unit test catches it.  The field doesn't get a chance to."
+```
+
+---
+
+## 🎯 Two Topics Today (2 min)
+
+**Topic A — Threshold boundary tests**
+Test the exact edges of the `temperature > 40000` and `voltage >= 4200` conditions.
+
+**Topic B — Integer overflow bug (convert_raw)**
+Reproduce a real-world truncation bug from `lt8460_get_temp_channel_temp()` in the Linux IIO subsystem, embedded inside `temp_sensor_convert_raw()`.
+
+---
+
+## 📐 Topic A: Boundary Value Analysis (8 min)
+
+### Theory — The Three Values to Test at Every Boundary
+
+```
+For condition  x > N:
+  Test  N - 1  → should NOT trigger  (just below)
+  Test  N      → should NOT trigger  (exactly at – '>' not '>=')
+  Test  N + 1  → SHOULD trigger      (just above)
+
+For condition  x >= N:
+  Test  N - 1  → should NOT trigger
+  Test  N      → SHOULD trigger      (exactly at – '>=' includes N)
+  Test  N + 1  → SHOULD trigger
+```
+
+### Temperature threshold  (> 40000 millideg)
+
+Open `test/test_led_control.c` and walk through the safety tests from Demo 3.
+Then add the boundary precision tests:
+
+```c
+// Exactly AT threshold – must NOT trigger (> not >=)
+void test_safety_logic_temp_exactly_at_threshold_does_not_trigger(void)
+{
+    int32_t  temperature = 40000;  // exactly 40 °C
+    uint32_t voltage     = 4200;   // voltage also at threshold
+
+    led_control_init();
+    red_led_on();
+
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
+
+    TEST_ASSERT_FALSE(led_control_get(LED_COLOR_GREEN));  // > not >=
 }
 
-"What happens at exactly 40°C? 39.9°C with 4.3V?"
+// One millidegree above – MUST trigger
+void test_safety_logic_temp_one_unit_above_threshold_triggers(void)
+{
+    int32_t  temperature = 40001;  // 40.001 °C
+    uint32_t voltage     = 4200;
 
-This bug caused:
-- Production recalls (thousands of units)
-- Safety incidents (overheating batteries)
-- Brand damage (customer trust loss)
-- Regulatory fines (safety violations)
+    led_control_init();
+    red_led_on();
 
-Manual testing checked:
-- 35°C, 4.0V ✅ (middle ranges)
-- 45°C, 4.5V ✅ (middle ranges)
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
 
-Never tested exact boundaries where bugs hide!
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_GREEN));
+}
 ```
 
-## 🎯 Why Boundaries Matter (2 min)
-```
-Embedded systems are different:
-⚡ Safety-critical - Wrong decisions cause harm
-🔋 Resource constrained - Integer overflow common
-📊 Real-world inputs - Sensors give unexpected values
-🎯 Precise requirements - Exact thresholds matter
-🔄 Long deployment - Field conditions vary widely
-```
+### Voltage threshold  (>= 4200 mV)
 
-## 🧠 Boundary Theory (3 min)
+```c
+// Exactly AT threshold – MUST trigger (>= includes 4200)
+void test_safety_logic_voltage_exactly_at_threshold_triggers(void)
+{
+    int32_t  temperature = 40001;
+    uint32_t voltage     = 4200;   // exactly 4.2 V
 
-### What Are Boundaries?
-```
-Edge cases where behavior changes:
+    led_control_init();
+    red_led_on();
 
-speed_status_t check_speed(float mph) {
-    if (mph <= 55.0f) return SPEED_OK;      // Boundary at 55
-    if (mph <= 75.0f) return SPEED_WARNING; // Boundary at 75
-    return SPEED_CRITICAL;                   // Above 75
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
+
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_GREEN));
 }
 
-Critical test values:
-- 54.9, 55.0, 55.1 (around first boundary)
-- 74.9, 75.0, 75.1 (around second boundary)
-- 0, negatives (invalid inputs)
-- Very large values (overflow)
+// One millivolt below – must NOT trigger
+void test_safety_logic_voltage_one_unit_below_threshold_does_not_trigger(void)
+{
+    int32_t  temperature = 40001;
+    uint32_t voltage     = 4199;   // 4.199 V
+
+    led_control_init();
+    red_led_on();
+
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
+
+    TEST_ASSERT_FALSE(led_control_get(LED_COLOR_GREEN));
+}
 ```
 
-### Boundary Value Analysis (BVA)
-```
-1. Identify Decision Points - Where does behavior change?
-2. Test Boundary Values - Just below, exactly on, just above
-3. Test Invalid Ranges - Below min, above max, invalid types
-4. Test Combinations - Multiple boundaries interacting
-```
-
-## 🔋 Live Demo Setup (2 min)
+Run:
 ```bash
-mkdir demo_battery_safety
-cd demo_battery_safety
-ceedling new demo_battery_safety
-cd demo_battery_safety
+ceedling test:path[test_led_control]
 ```
 
-## ⚡ Battery Safety Requirements (3 min)
-```c
-// Battery Safety Requirements:
-// 1. Normal: 3.0V ≤ voltage ≤ 4.2V, 0°C ≤ temp ≤ 45°C
-// 2. Warning: temp > 45°C OR voltage > 4.2V
-// 3. Emergency: temp > 60°C OR voltage > 4.5V OR temp < -10°C
-// 4. Charging disabled: voltage > 4.1V OR temp > 40°C
-// 5. Handle sensor errors
-
-typedef enum {
-    BATTERY_STATE_NORMAL,
-    BATTERY_STATE_WARNING,
-    BATTERY_STATE_EMERGENCY,
-    BATTERY_STATE_SENSOR_ERROR
-} battery_state_t;
-
-battery_state_t battery_evaluate_safety(const battery_reading_t* reading);
-```
-
-## 🧪 Traditional vs Boundary Testing (8 min)
-
-### Traditional Approach (3 min)
-```c
-void test_battery_should_be_normal_with_good_values(void) {
-    battery_reading_t reading = {3.7f, 25.0f, true, true};
-    TEST_ASSERT_EQUAL(BATTERY_STATE_NORMAL, battery_evaluate_safety(&reading));
-}
-
-void test_battery_should_be_emergency_with_high_temp(void) {
-    battery_reading_t reading = {3.7f, 65.0f, true, true};
-    TEST_ASSERT_EQUAL(BATTERY_STATE_EMERGENCY, battery_evaluate_safety(&reading));
-}
-```
-**Say:** "Tests middle of ranges, not boundaries where bugs hide!"
-
-### Boundary Approach (5 min)
-```c
-void test_battery_temperature_boundaries(void) {
-    battery_reading_t reading = {3.7f, 0, true, true};
-
-    // Test normal/warning boundary at 45°C
-    reading.temperature = 44.9f;
-    TEST_ASSERT_EQUAL(BATTERY_STATE_NORMAL, battery_evaluate_safety(&reading));
-
-    reading.temperature = 45.0f;
-    TEST_ASSERT_EQUAL(BATTERY_STATE_WARNING, battery_evaluate_safety(&reading));
-
-    reading.temperature = 45.1f;
-    TEST_ASSERT_EQUAL(BATTERY_STATE_WARNING, battery_evaluate_safety(&reading));
-
-    // Test warning/emergency boundary at 60°C
-    reading.temperature = 59.9f;
-    TEST_ASSERT_EQUAL(BATTERY_STATE_WARNING, battery_evaluate_safety(&reading));
-
-    reading.temperature = 60.0f;
-    TEST_ASSERT_EQUAL(BATTERY_STATE_EMERGENCY, battery_evaluate_safety(&reading));
-
-    reading.temperature = 60.1f;
-    TEST_ASSERT_EQUAL(BATTERY_STATE_EMERGENCY, battery_evaluate_safety(&reading));
-}
-```
-
-## 🔧 Implementation (3 min)
-```c
-battery_state_t battery_evaluate_safety(const battery_reading_t* reading) {
-    if (!reading->voltage_valid || !reading->temp_valid) {
-        return BATTERY_STATE_SENSOR_ERROR;
-    }
-
-    // Emergency conditions (most critical first)
-    if (reading->temperature > 60.0f ||
-        reading->temperature < -10.0f ||
-        reading->voltage > 4.5f) {
-        return BATTERY_STATE_EMERGENCY;
-    }
-
-    // Warning conditions
-    if (reading->temperature > 45.0f || reading->voltage > 4.2f) {
-        return BATTERY_STATE_WARNING;
-    }
-
-    return BATTERY_STATE_NORMAL;
-}
-```
-
-## 📊 Parametrized Testing (10 min)
-
-### The Problem (2 min)
-```
-"We could write hundreds of individual boundary tests,
-but there's a better way - parametrized testing!"
-```
-
-### Test Framework (8 min)
-```c
-typedef struct {
-    float voltage, temperature;
-    bool voltage_valid, temp_valid;
-    battery_state_t expected_state;
-    const char* description;
-} boundary_test_case_t;
-
-void test_battery_safety_boundary_conditions(void) {
-    boundary_test_case_t test_cases[] = {
-        // Temperature boundaries
-        {3.7f, 44.9f, true, true, BATTERY_STATE_NORMAL, "Just below 45°C"},
-        {3.7f, 45.0f, true, true, BATTERY_STATE_WARNING, "Exactly 45°C"},
-        {3.7f, 45.1f, true, true, BATTERY_STATE_WARNING, "Just above 45°C"},
-        {3.7f, 59.9f, true, true, BATTERY_STATE_WARNING, "Just below 60°C"},
-        {3.7f, 60.0f, true, true, BATTERY_STATE_EMERGENCY, "Exactly 60°C"},
-        {3.7f, 60.1f, true, true, BATTERY_STATE_EMERGENCY, "Just above 60°C"},
-
-        // Voltage boundaries
-        {4.19f, 25.0f, true, true, BATTERY_STATE_NORMAL, "Just below 4.2V"},
-        {4.20f, 25.0f, true, true, BATTERY_STATE_WARNING, "Exactly 4.2V"},
-        {4.21f, 25.0f, true, true, BATTERY_STATE_WARNING, "Just above 4.2V"},
-
-        // Combined conditions (the tricky ones!)
-        {4.19f, 45.0f, true, true, BATTERY_STATE_WARNING, "Normal V + warning T"},
-        {4.50f, 60.0f, true, true, BATTERY_STATE_EMERGENCY, "Both at emergency"},
-
-        // Sensor errors
-        {3.7f, 25.0f, false, true, BATTERY_STATE_SENSOR_ERROR, "Invalid voltage"},
-
-        // Extreme values (bad ADC readings)
-        {-1.0f, 25.0f, true, true, BATTERY_STATE_NORMAL, "Negative voltage"},
-        {10.0f, 25.0f, true, true, BATTERY_STATE_EMERGENCY, "Extreme voltage"},
-    };
-
-    for (size_t i = 0; i < num_tests; i++) {
-        // Run test case with descriptive failure message
-        // TEST_ASSERT_EQUAL_MESSAGE with description
-    }
-}
-```
-
-**Say:** "28 boundary conditions tested systematically!"
-
-## 💬 Discussion (5 min)
-
-### What We Accomplished
-- ✅ **28 boundary conditions** tested automatically
-- ✅ **Systematic coverage** of all decision points
-- ✅ **Combined conditions** that are easy to miss
-- ✅ **Extreme values** simulating ADC errors
-- ✅ **Clear documentation** of each test
-
-### Real-World Categories
-
-#### Hardware Interface Boundaries
-- ADC ranges (0-4095 for 12-bit)
-- Sensor calibration limits
-- Communication timeouts
-- PWM duty cycles (0-100%)
-
-#### Safety/Compliance Boundaries
-- Temperature operating ranges
-- Voltage protection limits
-- Current thresholds
-- Timing requirements
-
-#### Data Processing Boundaries
-- Integer overflow conditions
-- Floating-point precision
-- Array bounds, buffer sizes
-- State machine transitions
-
-### Common Pitfalls
-```c
-❌ Off-by-One: if (value < 100)    ✅ Correct: if (value <= 100)
-❌ Float Equality: == 45.0f        ✅ Tolerance: fabs(temp - 45.0f) < 0.01f
-❌ Overflow: result = reading + offset  ✅ Check: if (reading > 255 - offset)
-```
+**Say:** "These tests define the exact operator semantics. If someone changes `>` to `>=`
+for temperature, `test_safety_logic_temp_exactly_at_threshold_does_not_trigger` fails
+immediately — before the code ever reaches hardware."
 
 ---
 
-## 🎯 Instructor Notes
+## 🐛 Topic B: Integer Overflow Bug in convert_raw (15 min)
 
-### Key Messages
-- **Bugs hide at boundaries** where behavior changes
-- **Systematic approach** beats random testing
-- **Parametrized testing** scales boundary coverage
-- **Real-world complexity** needs comprehensive testing
+### The Bug's Origin
 
-### Demo Tips
-- **Start with impact** - Horror story gets attention
-- **Use realistic values** - Embedded voltages/temperatures
-- **Show systematic approach** vs ad hoc testing
-- **Celebrate coverage** - Many conditions tested quickly
+The formula in `temp_sensor_convert_raw()` replicates `lt8460_get_temp_channel_temp()`
+from the Linux kernel IIO subsystem. The original bug:
 
-### Handle Questions
-**"Too detailed?"** → "Detail prevents production failures"
-**"Manual testing sufficient?"** → "Humans miss systematic boundaries"
-**"Takes too long?"** → "Automated tests run in milliseconds"
+```c
+// ORIGINAL BUG (Linux lt8460):
+int32_t temp = ((int32_t)raw * 1200000 / 255 - 554250) * 1000 / 1910;
+*value = (uint16_t)temp;   // ← silently truncates bits [31:16]
+```
+
+A `uint16_t` cast on an `int32_t` keeps only the lower 16 bits.
+For values outside –32 768 to +32 767 millideg the result is wrong — silently.
+
+### The Bug Reproduced in Our Code
+
+Open `temp_sensor.h` and show the toggle:
+```c
+// Toggle with:  #define TEMP_CONVERT_BUG_ENABLED   (uncomment = bug, comment = fix)
+```
+
+Open `temp_sensor.c` and show both versions:
+```c
+// BUG version
+int temp_sensor_convert_raw(uint8_t raw, int16_t *value_millideg)
+{
+    int32_t temp = ((int32_t)raw * 1200000 / 255 - 554250) * MILLI / 1910;
+    *value_millideg = (int16_t)(uint16_t)temp;   // ← BUG line
+    return 0;
+}
+
+// FIX version
+int temp_sensor_convert_raw(uint8_t raw, int32_t *value_millideg)
+{
+    *value_millideg = ((int32_t)raw * 1200000 / 255 - 554250) * MILLI / 1910;
+    return 0;
+}
+```
+
+### The Overflow Lookup Table
+
+| raw | int32_t result | BUG int16_t stored | Error |
+|-----|---------------:|-------------------:|-------|
+| 0   | −290 183 mdeg (−290 °C) | −28 040 (−28 °C) | +262 °C wrong |
+| 128 | 25 184 mdeg (25 °C) | 25 184 (25 °C) | no overflow |
+| 200 | 202 579 mdeg (202 °C) | 5 971 (6 °C) | −196 °C wrong |
+
+**The safety consequence:** raw=200 represents a 202 °C battery. The bug stores 6 °C.
+The `> 40 °C` threshold is never crossed. Charging is never stopped. The battery overheats.
+
+### Running the Bug Tests
+
+Enable the bug (`#define TEMP_CONVERT_BUG_ENABLED` uncommented):
+```bash
+ceedling test:path[test_temp_sensor]
+```
+
+The bug tests pass — they document the wrong output:
+```c
+void test_convert_raw_demonstrates_overflow_value(void)
+{
+    int16_t result = 0;
+    temp_sensor_convert_raw(200, &result);
+    TEST_ASSERT_EQUAL_INT16(5971, result);   // overflow value — expected with bug
+}
+
+void test_convert_raw_overflow_safety_check_fails_to_trigger(void)
+{
+    int16_t stored_millideg = 0;
+    temp_sensor_convert_raw(200, &stored_millideg);
+    int deg_C = (int32_t)stored_millideg / 1000;
+    TEST_ASSERT_EQUAL_INT(5, deg_C);           // BUG: 202 °C appears as 5 °C
+    TEST_ASSERT_LESS_THAN_INT(40, deg_C);      // safety threshold does NOT fire
+}
+```
+
+Now comment out `#define TEMP_CONVERT_BUG_ENABLED` (fix active):
+```bash
+ceedling test:path[test_temp_sensor]
+```
+
+The fix tests pass — full range preserved:
+```c
+void test_convert_raw_full_range_preserved_by_fix(void)
+{
+    int32_t result = 0;
+    temp_sensor_convert_raw(200, &result);
+    TEST_ASSERT_EQUAL_INT32(202579, result);   // correct — no truncation
+}
+
+void test_convert_raw_fix_correctly_triggers_safety_threshold(void)
+{
+    int32_t stored_millideg = 0;
+    temp_sensor_convert_raw(200, &stored_millideg);
+    int deg_C = stored_millideg / 1000;
+    TEST_ASSERT_EQUAL_INT(202, deg_C);
+    TEST_ASSERT_GREATER_OR_EQUAL_INT(40, deg_C);  // safety threshold fires correctly
+}
+```
+
+**Say:** "This is what the unit test catches and hardware testing misses. You will
+never accidentally set raw=200 on the bench. The test vector hits this in milliseconds."
 
 ---
 
-**End Goal**: Attendees excited about systematic boundary testing for safety!
+## ✅ Run Full Suite (1 min)
+
+```bash
+ceedling test:all
+```
+
+All boundary and overflow tests pass (with fix active).
+
+---
+
+## 🎯 Key Takeaways
+
+- ✅ **Test `>` vs `>=` explicitly** — exact threshold semantics matter for safety
+- ✅ **Boundary triples**: just below, exactly at, just above — cover every decision point
+- ✅ **Integer overflow is silent** — a `(uint16_t)` cast never warns you; a test does
+- ✅ **Test vectors reach states hardware testing cannot** — raw=200 → 202 °C is not easy to reproduce physically
+- ✅ **Overflow bugs in third-party code are testable** — copy the formula, wrap it in a function, test it
+
+---
+
+**Next Demo:** All three modules (`led_control`, `temp_sensor`, `adc_monitor`) are combined
+into a single integration test that validates the full safety charging pipeline end-to-end.

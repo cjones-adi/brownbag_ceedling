@@ -1,0 +1,83 @@
+---
+:source:
+  :file: test/test_led_control.c
+  :dirname: test
+  :basename: test_led_control.c
+:successes:
+- :test: test_led_control_init_should_succeed
+  :line: 21
+  :message: ''
+  :unity_test_time: 0
+- :test: test_led_control_init_clears_state
+  :line: 27
+  :message: ''
+  :unity_test_time: 0
+- :test: test_red_led_on_sets_red
+  :line: 39
+  :message: ''
+  :unity_test_time: 0
+- :test: test_red_led_off_clears_red
+  :line: 46
+  :message: ''
+  :unity_test_time: 0
+- :test: test_red_led_on_does_not_affect_green
+  :line: 54
+  :message: ''
+  :unity_test_time: 0
+- :test: test_green_led_on_sets_green
+  :line: 62
+  :message: ''
+  :unity_test_time: 0
+- :test: test_green_led_off_clears_green
+  :line: 69
+  :message: ''
+  :unity_test_time: 0
+- :test: test_green_led_on_does_not_affect_red
+  :line: 77
+  :message: ''
+  :unity_test_time: 0
+- :test: test_blue_led_on_sets_blue
+  :line: 85
+  :message: ''
+  :unity_test_time: 0
+- :test: test_blue_led_off_clears_blue
+  :line: 92
+  :message: ''
+  :unity_test_time: 0
+- :test: test_toggle_blue_changes_state
+  :line: 101
+  :message: ''
+  :unity_test_time: 0
+- :test: test_all_three_leds_independent
+  :line: 113
+  :message: ''
+  :unity_test_time: 0
+- :test: test_get_state_reflects_active_leds
+  :line: 131
+  :message: ''
+  :unity_test_time: 0
+- :test: test_safety_logic_normal_conditions
+  :line: 148
+  :message: ''
+  :unity_test_time: 0
+- :test: test_safety_logic_over_temp_only
+  :line: 164
+  :message: ''
+  :unity_test_time: 0
+- :test: test_safety_logic_over_voltage_only
+  :line: 180
+  :message: ''
+  :unity_test_time: 0
+- :test: test_safety_logic_both_thresholds_exceeded
+  :line: 196
+  :message: ''
+  :unity_test_time: 0
+:failures: []
+:ignores: []
+:counts:
+  :total: 17
+  :passed: 17
+  :failed: 0
+  :ignored: 0
+:stdout: []
+:time: 0.0023988139982975554

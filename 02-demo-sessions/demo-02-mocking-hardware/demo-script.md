@@ -1,237 +1,228 @@
-# 🎭 Demo 2: Quick Reference Script
+# 🎭 Demo 2: Mocking Hardware – I2C Temperature Sensor
 
 **Total Time: 45 minutes**
+**Modules under test:** `temp_sensor` (read path) via a mocked `i2c_hal`
 
-## 📝 Opening Hook (5 min)
+---
+
+## 📝 Opening Hook (3 min)
+
 ```
-"Raise your hand if this happened:"
-- PCB delayed 6 weeks, software deadline next week
-- Sensor works on desk, fails randomly in field
-- Need to test I2C timeout but can't break bus reliably
+"Raise your hand if this has happened to you:"
+  - PCB delayed 6 weeks, software deadline is next week
+  - Sensor reads fine on the bench, fails randomly in the field
+  - Need to test I2C timeout handling but you can't unplug the cable
+    fast enough while the code is running
 
-"Today: Develop sensor drivers BEFORE hardware arrives"
-```
-
-## 🎯 The Problem (3 min)
-```
-HW Team: "PCB delayed, sensor not working"
-SW Team: "Can't write driver without hardware"
-Integration: "Everything breaks together"
-Deadline: "Ship anyway, fix in field"
-
-BME280 Requirements:
-- Read temp/humidity over I2C
-- Handle comm errors gracefully
-- Retry on failures, validate chip ID
+"Today: we write a complete sensor driver test suite –
+ including fault injection – without touching a MAX31889 or any I2C bus."
 ```
 
-## 🧠 Mocking Concepts (7 min)
+---
+
+## 🎯 What We Are Building (3 min)
+
+The `temp_sensor` read path from the safety charging demo.
+
+In production, `temp_sensor_read()` talks to the MAX31889 temperature sensor
+over I2C using the MaximSDK driver. In the test build (when `TEST` is defined),
+it calls `i2c_hal_write_read()` instead — a thin HAL that CMock can replace
+with a fully controllable fake.
+
+```
+Production build:        Test build:
+  temp_sensor_read()       temp_sensor_read()
+       │                        │
+  MAX31889 SDK driver      i2c_hal_write_read()   ← CMock replaces this
+       │                        │
+  Real I2C hardware         fake callback we write
+```
+
+---
+
+## 🧠 Mocking Concepts (5 min)
 
 ### What is a Mock?
 ```
-Mock = Fake implementation that:
-✅ Replaces real hardware interfaces
-✅ Controls return values/behaviors
-✅ Verifies function calls
-✅ Simulates errors on demand
+A mock is a generated fake of a hardware interface that:
+  ✅ Replaces real hardware calls in the test build
+  ✅ Lets the test inject any return value or byte payload
+  ✅ Verifies that the production code called the right functions
+  ✅ Fails the test automatically if an unexpected call is made
 ```
 
-### Real vs Mock I2C
+### The HAL we will mock — `i2c_hal.h`
 ```c
-// Real I2C - Complex hardware interaction
-i2c_status_t i2c_write(...) {
-    I2C_DR = addr;
-    while (!(I2C_SR1 & I2C_SR1_ADDR));
-    // ... register manipulation
+// Return codes
+#define I2C_SUCCESS    0
+#define I2C_TIMEOUT   -1
+#define I2C_BUS_HUNG  -2
+
+// Combined write-then-read (mirrors what MAX31889 read needs)
+int i2c_hal_write_read(uint8_t dev_addr,
+                       const uint8_t *tx, uint8_t tx_len,
+                       uint8_t *rx,       uint8_t rx_len);
+
+// Bus recovery after BUS_HUNG
+int i2c_hal_reset(void);
+```
+
+CMock reads this header and auto-generates `mock_i2c_hal.h / mock_i2c_hal.c`.
+No manual work — Ceedling triggers generation when it sees `#include "mock_i2c_hal.h"`
+in the test file.
+
+---
+
+## 🔍 Walk Through the Test File (10 min)
+
+Open `test/test_temp_sensor.c`. Show the three sections:
+
+```
+SCENARIO 1 – overflow bug demo  (covered in Demo 4)
+SCENARIO 2 – simulated hardware, no board required  ← today
+SCENARIO 3 – simulated I2C bus-hung + recovery      ← today
+```
+
+### setUp / tearDown
+```c
+void setUp(void)
+{
+    mock_i2c_hal_Init();      // reset CMock tracking state
 }
 
-// Mock I2C - Controlled for testing
-i2c_status_t i2c_write(...) {
-    return mock_return_value;  // We control this!
+void tearDown(void)
+{
+    mock_i2c_hal_Verify();    // assert all expectations were met
+    mock_i2c_hal_Destroy();   // free CMock internals
 }
 ```
 
-### Why Perfect for Embedded?
-- Develop without hardware delays
-- Test faster (microseconds vs milliseconds)
-- Force error conditions safely
-- Verify exact call sequences
-
-## ⚡ Live Demo Setup (3 min)
-```bash
-mkdir demo_bme280_driver
-cd demo_bme280_driver
-ceedling new demo_bme280_driver
-cd demo_bme280_driver
-
-# Show project.yml has :use_mocks: TRUE
+### The fake callback for a 25 °C reading
+```c
+// MAX31889 encoding: temp_millideg = raw * 5
+// 25 °C  →  raw = 5000 = 0x1388  →  rx = {0x13, 0x88}
+static int fake_i2c_read_25C(uint8_t dev_addr,
+                              const uint8_t *tx,  uint8_t tx_len,
+                              uint8_t       *rx,  uint8_t rx_len,
+                              int            num_calls)
+{
+    rx[0] = 0x13u;   // MSB
+    rx[1] = 0x88u;   // LSB
+    return I2C_SUCCESS;
+}
 ```
 
-## 🔌 Hardware Interface (4 min)
-```c
-// src/i2c_hal.h - What we'll mock
-typedef enum {
-    I2C_OK = 0, I2C_TIMEOUT, I2C_NACK, I2C_BUSY, I2C_ERROR
-} i2c_status_t;
+**Ask:** "Where does this 0x1388 come from?"
 
-i2c_status_t i2c_init(void);
-i2c_status_t i2c_write(uint8_t device_addr, uint8_t reg_addr,
-                       uint8_t* data, size_t len);
-i2c_status_t i2c_read(uint8_t device_addr, uint8_t reg_addr,
-                      uint8_t* data, size_t len);
+Walk through the sensor encoding math:
+```
+25 °C × (1 / 0.005) = 5000 raw counts
+5000 decimal = 0x1388
+Big-endian 2-byte: rx[0]=0x13, rx[1]=0x88
+Verify: (0x13 << 8) | 0x88 = 5000
+        5000 * 5 = 25000 millideg = 25 °C  ✓
 ```
 
-## 📡 Sensor Driver Interface (3 min)
+---
+
+## 🧪 Scenario 2a — Positive Temperature Parse (5 min)
+
 ```c
-// src/bme280_driver.h
-#define BME280_CHIP_ID 0x60
-#define BME280_ADDR 0x76
-
-typedef enum {
-    BME280_OK = 0,
-    BME280_COMM_ERROR,
-    BME280_INVALID_CHIP_ID,
-    BME280_NOT_INITIALIZED
-} bme280_status_t;
-
-bme280_status_t bme280_init(void);
-bme280_status_t bme280_read_temperature(float* temperature);
-bme280_status_t bme280_read_humidity(float* humidity);
-bool bme280_is_connected(void);
-```
-
-## 🧪 First Test with Mock (6 min)
-```c
-// test/test_bme280_driver.c
-#include "unity.h"
-#include "bme280_driver.h"
-#include "mock_i2c_hal.h"  // CMock generates this!
-
-void test_bme280_init_should_verify_chip_id_and_return_ok_when_valid(void) {
-    // Arrange - Control mock behavior
-    uint8_t expected_chip_id = BME280_CHIP_ID;
-    i2c_init_ExpectAndReturn(I2C_OK);
-    i2c_read_ExpectAndReturn(BME280_ADDR, 0xD0, NULL, 1, I2C_OK);
-    i2c_read_IgnoreArg_data();
-    i2c_read_ReturnMemThruPtr_data(&expected_chip_id, 1);
+void test_temp_sensor_read_parses_positive_temperature_correctly(void)
+{
+    // Arrange – install the fake callback
+    i2c_hal_write_read_StubWithCallback(fake_i2c_read_25C);
 
     // Act
-    bme280_status_t result = bme280_init();
+    int32_t temp = 0;
+    int ret = temp_sensor_read(&temp);
 
     // Assert
-    TEST_ASSERT_EQUAL(BME280_OK, result);
+    TEST_ASSERT_EQUAL_INT(0, ret);
+    TEST_ASSERT_EQUAL_INT32(25000, temp);   // 25 °C in millidegrees
 }
 ```
 
-## 🔴 See Mock Generation (2 min)
+Run it:
 ```bash
-ceedling test:test_bme280_driver  # Will fail but generate mocks
-
-# Show generated files
-ls -la build/test/mocks/
-cat build/test/mocks/mock_i2c_hal.h
-```
-**Say:** "CMock read our header and created controllable mock functions!"
-
-## 🟢 Implement Driver (8 min)
-```c
-// src/bme280_driver.c
-#include "bme280_driver.h"
-#include "i2c_hal.h"
-
-static bool initialized = false;
-
-bme280_status_t bme280_init(void) {
-    if (i2c_init() != I2C_OK) {
-        return BME280_COMM_ERROR;
-    }
-
-    uint8_t chip_id = 0;
-    if (i2c_read(BME280_ADDR, 0xD0, &chip_id, 1) != I2C_OK) {
-        return BME280_COMM_ERROR;
-    }
-
-    if (chip_id != BME280_CHIP_ID) {
-        return BME280_INVALID_CHIP_ID;
-    }
-
-    initialized = true;
-    return BME280_OK;
-}
-
-// ... implement other functions
+ceedling test:path[test_temp_sensor]
 ```
 
-```bash
-ceedling test:test_bme280_driver  # GREEN!
-```
-
-## ⚠️ Error Testing (5 min)
-```c
-void test_bme280_init_should_return_comm_error_when_i2c_fails(void) {
-    // Force I2C timeout
-    i2c_init_ExpectAndReturn(I2C_OK);
-    i2c_read_ExpectAndReturn(BME280_ADDR, 0xD0, NULL, 1, I2C_TIMEOUT);
-    i2c_read_IgnoreArg_data();
-
-    bme280_status_t result = bme280_init();
-    TEST_ASSERT_EQUAL(BME280_COMM_ERROR, result);
-}
-
-void test_bme280_init_should_return_invalid_chip_id_when_wrong_id(void) {
-    // Return wrong chip ID
-    uint8_t wrong_id = 0x42;
-    i2c_init_ExpectAndReturn(I2C_OK);
-    i2c_read_ExpectAndReturn(BME280_ADDR, 0xD0, NULL, 1, I2C_OK);
-    i2c_read_IgnoreArg_data();
-    i2c_read_ReturnMemThruPtr_data(&wrong_id, 1);
-
-    bme280_status_t result = bme280_init();
-    TEST_ASSERT_EQUAL(BME280_INVALID_CHIP_ID, result);
-}
-```
-
-**Say:** "These errors are hard to create on real hardware, easy with mocks!"
-
-## 💬 Discussion (4 min)
-
-### What We Accomplished
-- ✅ Complete sensor driver without I2C hardware
-- ✅ Tested normal operation and error conditions
-- ✅ Verified state management and chip validation
-- ✅ 100% reproducible tests
-
-### Real Benefits
-- **Development**: No hardware delays, instant feedback
-- **Quality**: Error path testing, boundary conditions
-- **Integration**: Logic verified before HW integration
-
-### Handle Common Questions
-**"Mocks test fake behavior?"** → "Mocks test real logic with controlled inputs"
-**"How ensure mocks match reality?"** → "Integration tests validate HW interface"
-**"Seems like extra work?"** → "Initial cost, massive debugging savings"
+**Say:** "No hardware. No cable. No board. We just proved the driver decodes the
+MAX31889 byte format correctly."
 
 ---
 
-## 🎯 Instructor Notes
+## 🧪 Scenario 2b — I2C Timeout (5 min)
 
-### Key Points to Emphasize
-- Mock the **interface**, test the **logic**
-- Unit tests **complement**, don't replace HW testing
-- Error testing is **much easier** with mocks
-- CMock **automates** the mock generation
+```c
+static int fake_i2c_timeout(...) { return I2C_TIMEOUT; }
 
-### Demo Flow Tips
-- **Move quickly** through setup (attendees saw this in Demo 1)
-- **Spend time** explaining mock expectations
-- **Show excitement** when CMock generates files
-- **Emphasize speed** - millisecond tests vs hardware delays
+void test_temp_sensor_read_handles_i2c_timeout_safely(void)
+{
+    i2c_hal_write_read_StubWithCallback(fake_i2c_timeout);
+    // No i2c_hal_reset_Expect() -- an accidental reset() call FAILS the test
 
-### Handle Issues
-- **CMock generation fails**: Have backup mocks ready
-- **Mock expectation errors**: Simplify the expectations
-- **Compilation issues**: Check include paths carefully
+    int32_t temp = 99999;   // sentinel – must NOT be modified
+    int ret = temp_sensor_read(&temp);
+
+    TEST_ASSERT_EQUAL_INT(I2C_TIMEOUT, ret);
+    TEST_ASSERT_EQUAL_INT32(99999, temp);   // output untouched
+}
+```
+
+**Say:** "We just tested the disconnect scenario — unplugged sensor, broken cable —
+without physically touching the hardware. And we verified that `i2c_hal_reset()`
+was NOT called, which is correct behaviour for a simple timeout."
 
 ---
 
-**End Goal**: Attendees excited about testing without hardware dependencies!
+## 🧪 Scenario 3 — I2C Bus Hung + Recovery (5 min)
+
+```c
+static int fake_i2c_bus_hung(...) { return I2C_BUS_HUNG; }
+
+void test_temp_sensor_read_calls_reset_on_bus_hung(void)
+{
+    i2c_hal_write_read_StubWithCallback(fake_i2c_bus_hung);
+
+    // Strict expectation: reset() called exactly once
+    i2c_hal_reset_ExpectAndReturn(I2C_SUCCESS);
+
+    int32_t temp = 99999;   // sentinel
+    int ret = temp_sensor_read(&temp);
+
+    TEST_ASSERT_EQUAL_INT(I2C_BUS_HUNG, ret);
+    TEST_ASSERT_EQUAL_INT32(99999, temp);
+}
+```
+
+**Say:** "We just tested the 'SDA stuck low' scenario — normally you would have to
+physically short-circuit the I2C bus on the board to hit this path. With CMock we
+inject it in one line. And `mock_i2c_hal_Verify()` in tearDown confirms reset()
+was called exactly once — not zero times, not twice."
+
+---
+
+## ✅ Run Full Suite (1 min)
+
+```bash
+ceedling test:all
+```
+
+All scenarios should pass.
+
+---
+
+## 🎯 Key Takeaways
+
+- ✅ **CMock generates the mock from the header** — no manual stub writing
+- ✅ **StubWithCallback** injects any byte payload or return code you need
+- ✅ **ExpectAndReturn** enforces strict call counts — extra or missing calls fail the test
+- ✅ **Sentinel pattern** (`temp = 99999`) proves output is not modified on error
+- ✅ **tearDown Verify()** is the silent gatekeeper — catches unsatisfied expectations
+
+---
+
+**Next Demo:** We use TDD to build the safety decision logic (Temp > 40 °C AND Voltage ≥ 4.2 V)
+test-first, producing the `test_safety_logic_*` tests from scratch.

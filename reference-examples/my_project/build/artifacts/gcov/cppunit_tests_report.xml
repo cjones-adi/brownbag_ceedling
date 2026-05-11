@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TestRun>
+  <FailedTests/>
+  <SuccessfulTests>
+    <Test id="1">
+      <Name>test/test_led_control.c::test_led_control_init_should_succeed</Name>
+    </Test>
+    <Test id="2">
+      <Name>test/test_led_control.c::test_led_control_init_clears_state</Name>
+    </Test>
+    <Test id="3">
+      <Name>test/test_led_control.c::test_red_led_on_sets_red</Name>
+    </Test>
+    <Test id="4">
+      <Name>test/test_led_control.c::test_red_led_off_clears_red</Name>
+    </Test>
+    <Test id="5">
+      <Name>test/test_led_control.c::test_red_led_on_does_not_affect_green</Name>
+    </Test>
+    <Test id="6">
+      <Name>test/test_led_control.c::test_green_led_on_sets_green</Name>
+    </Test>
+    <Test id="7">
+      <Name>test/test_led_control.c::test_green_led_off_clears_green</Name>
+    </Test>
+    <Test id="8">
+      <Name>test/test_led_control.c::test_green_led_on_does_not_affect_red</Name>
+    </Test>
+    <Test id="9">
+      <Name>test/test_led_control.c::test_blue_led_on_sets_blue</Name>
+    </Test>
+    <Test id="10">
+      <Name>test/test_led_control.c::test_blue_led_off_clears_blue</Name>
+    </Test>
+    <Test id="11">
+      <Name>test/test_led_control.c::test_toggle_blue_changes_state</Name>
+    </Test>
+    <Test id="12">
+      <Name>test/test_led_control.c::test_all_three_leds_independent</Name>
+    </Test>
+    <Test id="13">
+      <Name>test/test_led_control.c::test_get_state_reflects_active_leds</Name>
+    </Test>
+    <Test id="14">
+      <Name>test/test_led_control.c::test_safety_logic_normal_conditions</Name>
+    </Test>
+    <Test id="15">
+      <Name>test/test_led_control.c::test_safety_logic_over_temp_only</Name>
+    </Test>
+    <Test id="16">
+      <Name>test/test_led_control.c::test_safety_logic_over_voltage_only</Name>
+    </Test>
+    <Test id="17">
+      <Name>test/test_led_control.c::test_safety_logic_both_thresholds_exceeded</Name>
+    </Test>
+    <Test id="18">
+      <Name>test/test_temp_sensor.c::test_convert_raw_normal_temp_no_overflow</Name>
+    </Test>
+    <Test id="19">
+      <Name>test/test_temp_sensor.c::test_convert_raw_demonstrates_overflow_value</Name>
+    </Test>
+    <Test id="20">
+      <Name>test/test_temp_sensor.c::test_convert_raw_overflow_safety_check_fails_to_trigger</Name>
+    </Test>
+    <Test id="21">
+      <Name>test/test_temp_sensor.c::test_convert_raw_null_pointer_returns_error</Name>
+    </Test>
+    <Test id="22">
+      <Name>test/test_temp_sensor.c::test_temp_sensor_read_parses_positive_temperature_correctly</Name>
+    </Test>
+    <Test id="23">
+      <Name>test/test_temp_sensor.c::test_temp_sensor_read_handles_i2c_timeout_safely</Name>
+    </Test>
+    <Test id="24">
+      <Name>test/test_temp_sensor.c::test_temp_sensor_read_calls_reset_on_bus_hung</Name>
+    </Test>
+  </SuccessfulTests>
+  <IgnoredTests/>
+  <Statistics>
+    <Tests>24</Tests>
+    <Ignores>0</Ignores>
+    <FailuresTotal>0</FailuresTotal>
+    <Errors>0</Errors>
+    <Failures>0</Failures>
+  </Statistics>
+</TestRun>

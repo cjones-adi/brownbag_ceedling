@@ -9,9 +9,10 @@ This section provides the foundational knowledge you need before diving into han
 - **project-setup.md** - How to configure your first testing project
 
 ### 2. 🧩 Core Framework Components
+- **why-ceedling.md** - Why Ceedling is the right tool for embedded C unit testing
+- **ceedling-basics.md** - Ceedling build system and project structure
 - **unity-basics.md** - Unity testing framework fundamentals
 - **cmock-basics.md** - CMock for hardware interface mocking
-- **ceedling-basics.md** - Ceedling build system and project structure
 - **cexceptions-basics.md** - Exception handling in embedded tests
 
 ### 3. 🤔 The "Why" Behind Testing

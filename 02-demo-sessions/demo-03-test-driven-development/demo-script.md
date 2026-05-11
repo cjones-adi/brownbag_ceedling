@@ -1,257 +1,248 @@
-# 🔴 Demo 3: Quick Reference Script
+# 🔴 Demo 3: Test-Driven Development – Safety Decision Logic
 
 **Total Time: 45 minutes**
-
-## 📝 Opening Philosophy (5 min)
-```
-Traditional Approach:
-1. Think implementation → 2. Write code → 3. Debug → 4. Add tests → 5. Ship
-
-TDD Approach:
-1. Think behavior → 2. Write test (RED) → 3. Make pass (GREEN) → 4. Improve (REFACTOR) → Repeat
-
-"Embedded devs say: 'No time for tests first!' But consider:
-- Debugging on hardware = 10x slower than fixing failing tests
-- Design flaws at integration = expensive to fix
-- Unclear requirements = rework and missed deadlines
-- Untested error paths = field failures"
-```
-
-## 🔄 TDD Cycle (5 min)
-
-### The Three Phases
-```
-🔴 RED: Write failing test (define behavior, prove test works)
-🟢 GREEN: Make it pass (simplest code, don't optimize yet)
-🔧 REFACTOR: Improve design (tests protect during changes)
-
-Mantra: "Red, Green, Refactor - never skip a step!"
-        "Small steps - one test at a time!"
-```
-
-## 🎯 The Problem (2 min)
-```
-PID Controller for temperature regulation:
-1. Calculate output from setpoint and current value
-2. Support Kp, Ki, Kd gains
-3. Handle integral windup protection
-4. Reset controller state
-5. Limit output to min/max
-
-Perfect for TDD:
-- Clear requirements ✅
-- Testable math ✅
-- Edge cases ✅
-```
-
-## ⚡ Setup (2 min)
-```bash
-mkdir demo_pid_tdd
-cd demo_pid_tdd
-ceedling new demo_pid_tdd
-cd demo_pid_tdd
-```
-
-## 🔴 RED: First Test (4 min)
-```c
-// test/test_pid_controller.c
-#include "unity.h"
-#include "pid_controller.h"  // Doesn't exist yet!
-
-void test_pid_calculate_should_return_proportional_error_when_only_kp_set(void) {
-    // Arrange
-    pid_controller_t pid;
-    pid_init(&pid, 1.0f, 0.0f, 0.0f);  // Kp=1.0, Ki=0, Kd=0
-
-    float setpoint = 25.0f;
-    float current = 20.0f;
-    float expected_output = 5.0f;  // Error=5, Output=Kp*error=1.0*5=5
-
-    // Act
-    float output = pid_calculate(&pid, setpoint, current, 0.1f);
-
-    // Assert
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, expected_output, output);
-}
-```
-
-```bash
-ceedling test:test_pid_controller  # FAILS - perfect RED!
-```
-
-## 🟢 GREEN: Make It Pass (6 min)
-
-### Header (2 min)
-```c
-// src/pid_controller.h
-typedef struct {
-    float kp, ki, kd;
-    float integral;
-    float last_error;
-} pid_controller_t;
-
-void pid_init(pid_controller_t* pid, float kp, float ki, float kd);
-float pid_calculate(pid_controller_t* pid, float setpoint, float current, float dt);
-```
-
-### Minimal Implementation (4 min)
-```c
-// src/pid_controller.c
-void pid_init(pid_controller_t* pid, float kp, float ki, float kd) {
-    pid->kp = kp;
-    pid->ki = ki;
-    pid->kd = kd;
-    pid->integral = 0.0f;
-    pid->last_error = 0.0f;
-}
-
-float pid_calculate(pid_controller_t* pid, float setpoint, float current, float dt) {
-    float error = setpoint - current;
-    return pid->kp * error;  // Only P term - minimal!
-}
-```
-
-```bash
-ceedling test:test_pid_controller  # GREEN!
-```
-
-## 🔴 RED: Add Integral (3 min)
-```c
-void test_pid_calculate_should_accumulate_integral_error_when_ki_set(void) {
-    pid_controller_t pid;
-    pid_init(&pid, 0.0f, 1.0f, 0.0f);  // Ki=1.0
-
-    float setpoint = 25.0f, current = 20.0f, dt = 0.1f;
-
-    float output1 = pid_calculate(&pid, setpoint, current, dt);
-    float output2 = pid_calculate(&pid, setpoint, current, dt);
-
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.5f, output1);  // Ki*error*dt=1*5*0.1=0.5
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, output2);  // 0.5+0.5=1.0
-}
-```
-
-## 🟢 GREEN: Add Integral (3 min)
-```c
-float pid_calculate(pid_controller_t* pid, float setpoint, float current, float dt) {
-    float error = setpoint - current;
-
-    // Add integral term
-    pid->integral += error * dt;
-
-    return pid->kp * error + pid->ki * pid->integral;
-}
-```
-
-## 🔴 RED: Add Derivative (4 min)
-```c
-void test_pid_calculate_should_compute_derivative_when_kd_set(void) {
-    pid_controller_t pid;
-    pid_init(&pid, 0.0f, 0.0f, 1.0f);  // Kd=1.0
-
-    float dt = 0.1f;
-    float output1 = pid_calculate(&pid, 25.0f, 20.0f, dt);  // error=5
-    float output2 = pid_calculate(&pid, 25.0f, 15.0f, dt);  // error=10, deriv=(10-5)/0.1=50
-
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, 0.0f, output1);   // No previous error
-    TEST_ASSERT_FLOAT_WITHIN(0.01f, 50.0f, output2);  // Kd*derivative=1*50=50
-}
-```
-
-## 🟢 GREEN: Complete PID (2 min)
-```c
-float pid_calculate(pid_controller_t* pid, float setpoint, float current, float dt) {
-    float error = setpoint - current;
-
-    float p_term = pid->kp * error;
-
-    pid->integral += error * dt;
-    float i_term = pid->ki * pid->integral;
-
-    float derivative = (error - pid->last_error) / dt;
-    float d_term = pid->kd * derivative;
-    pid->last_error = error;
-
-    return p_term + i_term + d_term;
-}
-```
-
-## 🔧 REFACTOR: Improve Design (5 min)
-```c
-// Add output limiting and helper functions
-void pid_set_output_limits(pid_controller_t* pid, float min, float max);
-
-static float clamp(float value, float min, float max) {
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
-}
-
-// Update calculate to use clamp
-float output = p_term + i_term + d_term;
-return clamp(output, pid->output_min, pid->output_max);
-```
-
-```bash
-ceedling test:test_pid_controller  # Still GREEN!
-```
-
-## 💬 Discussion (5 min)
-
-### What We Accomplished
-- ✅ Clear API design driven by tests
-- ✅ Complete PID functionality (P, I, D terms)
-- ✅ Safe refactoring with test protection
-- ✅ Living documentation in test form
-- ✅ Confidence - proved it works step by step
-
-### When to Use TDD in Embedded
-
-#### TDD Works Great For:
-- ✅ **Algorithms** - Math functions, filters, transformations
-- ✅ **Business Logic** - Rules, decisions, protocols
-- ✅ **Clear Requirements** - Known inputs/outputs, edge cases
-
-#### TDD is Challenging For:
-- ⚠️ **Hardware Init** - Register setup, interrupts
-- ⚠️ **Real-Time Critical** - ISRs, time-critical loops
-- ⚠️ **Exploratory** - Hardware bring-up, proof of concept
-
-#### Hybrid Approach:
-```
-Application Layer  ← TDD (business logic)
-Service Layer      ← TDD (data processing)
-Driver Layer       ← Traditional (hardware interfaces)
-HAL Layer         ← Traditional (registers)
-```
-
-### Common Questions
-**"TDD slows development?"** → "Slower initially, faster overall due to less debugging"
-**"Requirements change?"** → "Change tests first, then code"
-**"What test to write first?"** → "Simplest behavior that provides value"
-**"Performance requirements?"** → "Make it work (TDD), then make it fast"
+**Module under test:** Safety logic in `test_led_control.c` (business rules, built test-first)
 
 ---
 
-## 🎯 Instructor Notes
+## 📝 Opening Philosophy (3 min)
 
-### Keep Energy High
-- **Celebrate each GREEN** - Build excitement
-- **Move at good pace** - Don't get bogged down in details
-- **Show confidence** in refactoring with test protection
-- **Ask prediction questions** - "What test should we write next?"
+```
+Traditional approach:
+  1. Think about implementation
+  2. Write code
+  3. Debug on hardware
+  4. Add tests (maybe)
 
-### Handle Issues
-- **Compilation errors**: Have code snippets ready to paste
-- **Test failures**: Use as teaching moment for debugging
-- **Getting stuck**: "Let me think about simplest behavior to test..."
+TDD approach:
+  1. Think about behaviour
+  2. Write a failing test  (RED)
+  3. Write the simplest code that passes  (GREEN)
+  4. Improve the design  (REFACTOR)
+  5. Repeat
 
-### Key Messages
-- Tests **drive design** decisions
-- **Small steps** are powerful
-- **Refactoring is safe** with tests
-- TDD is about **design**, not just testing
+"Debugging on hardware is 10× slower than fixing a failing test on your PC.
+ TDD keeps you in the fast loop."
+```
 
 ---
 
-**End Goal**: Attendees see TDD as design methodology, not just testing approach!
+## 🔄 The TDD Cycle (2 min)
+
+```
+🔴 RED    – Write a failing test. Prove the test actually catches a bug.
+🟢 GREEN  – Write the minimum code to make it pass. No extras.
+🔧 BLUE   – Refactor. Improve readability and design. Tests stay green.
+↩️  REPEAT – One small behaviour at a time.
+```
+
+---
+
+## 🎯 What We Are Building (3 min)
+
+The safety decision logic for the MAX32655FTHR charging demo:
+
+```
+main.c logic (production):
+  Red LED always ON  →  system is running
+  If (temperature > 40 °C) AND (voltage ≥ 4.2 V):
+      Green LED ON  →  "stop charging" signal to the PMIC
+```
+
+We will drive this logic entirely through `led_control` and express it as
+unit tests — no `main.c`, no PMIC, no ADC, no I2C needed.
+
+---
+
+## 🔴 RED: First Test — Normal Conditions (5 min)
+
+Start with the simplest case: both values below threshold → only Red LED should be on.
+
+```c
+void test_safety_logic_normal_conditions(void)
+{
+    int32_t  temperature = 30000;  // 30 °C in millideg – below 40 °C threshold
+    uint32_t voltage     = 3900;   // 3.9 V in mV – below 4.2 V threshold
+
+    led_control_init();
+    red_led_on();
+
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
+
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_RED));
+    TEST_ASSERT_FALSE(led_control_get(LED_COLOR_GREEN));
+}
+```
+
+Run before `red_led_on()` exists:
+```bash
+ceedling test:path[test_led_control]   # FAILS – undeclared identifier
+```
+
+**Say:** "RED phase. The test cannot even compile because we haven't written the
+helper yet. That is fine — that is exactly where we want to be."
+
+---
+
+## 🟢 GREEN: Add the Convenience Wrappers (4 min)
+
+Add to `led_control.h` and `led_control.c`:
+
+```c
+// led_control.h (declarations)
+int red_led_on(void);
+int red_led_off(void);
+int green_led_on(void);
+int green_led_off(void);
+int blue_led_on(void);
+int blue_led_off(void);
+
+// led_control.c (definitions – one-liners that call led_control_set)
+int red_led_on(void)   { return led_control_set(LED_COLOR_RED,   true);  }
+int red_led_off(void)  { return led_control_set(LED_COLOR_RED,   false); }
+int green_led_on(void) { return led_control_set(LED_COLOR_GREEN, true);  }
+int green_led_off(void){ return led_control_set(LED_COLOR_GREEN, false); }
+int blue_led_on(void)  { return led_control_set(LED_COLOR_BLUE,  true);  }
+int blue_led_off(void) { return led_control_set(LED_COLOR_BLUE,  false); }
+```
+
+```bash
+ceedling test:path[test_led_control]   # PASSES
+```
+
+**Say:** "GREEN. The minimum code that makes the test pass. Nothing more."
+
+---
+
+## 🔴 RED: Over-Temperature Only (3 min)
+
+```c
+void test_safety_logic_over_temp_only(void)
+{
+    int32_t  temperature = 45000;  // 45 °C – above threshold
+    uint32_t voltage     = 3900;   // 3.9 V – below threshold
+
+    led_control_init();
+    red_led_on();
+
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
+
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_RED));
+    TEST_ASSERT_FALSE(led_control_get(LED_COLOR_GREEN));  // AND condition – both required
+}
+```
+
+```bash
+ceedling test:path[test_led_control]   # PASSES immediately (logic already correct)
+```
+
+**Say:** "The test passes without any new code because the AND condition in the
+if-statement already handles this. But the test now documents that over-temperature
+alone is NOT enough to trigger the stop-charging signal."
+
+---
+
+## 🔴 RED: Over-Voltage Only (2 min)
+
+```c
+void test_safety_logic_over_voltage_only(void)
+{
+    int32_t  temperature = 30000;  // 30 °C – below threshold
+    uint32_t voltage     = 4300;   // 4.3 V – above threshold
+
+    led_control_init();
+    red_led_on();
+
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
+
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_RED));
+    TEST_ASSERT_FALSE(led_control_get(LED_COLOR_GREEN));  // must NOT trigger alone
+}
+```
+
+**Ask the audience:** "What would happen if someone changed `&&` to `||`?"
+Run the test to show it is the safety net against that mistake.
+
+---
+
+## 🔴 RED: Both Thresholds Exceeded (4 min)
+
+The most important test — the only case that should stop charging:
+
+```c
+void test_safety_logic_both_thresholds_exceeded(void)
+{
+    int32_t  temperature = 41000;  // 41 °C – above 40 °C
+    uint32_t voltage     = 4200;   // 4.2 V – at threshold (>= triggers)
+
+    led_control_init();
+    red_led_on();
+
+    if (temperature > 40000 && voltage >= 4200) {
+        green_led_on();
+    }
+
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_RED));
+    TEST_ASSERT_TRUE(led_control_get(LED_COLOR_GREEN));   // stop charging fires
+}
+```
+
+Change `&&` to `||` in the if-statement:
+```bash
+ceedling test:path[test_led_control]   # FAILS – one of the "only" tests breaks
+```
+
+Restore `&&`:
+```bash
+ceedling test:path[test_led_control]   # All pass again
+```
+
+**Say:** "This is TDD doing its job. The combined test suite locks down exactly
+the intended logic so a future refactor cannot silently break it."
+
+---
+
+## 🔧 Refactor: What TDD Gave Us (3 min)
+
+Point out what we now have:
+
+| Test | What it proves |
+|------|----------------|
+| `normal_conditions` | System runs, no false trigger |
+| `over_temp_only` | Single condition is not enough |
+| `over_voltage_only` | Single condition is not enough |
+| `both_thresholds_exceeded` | Both required → charging stops |
+
+**Say:** "Each test is a living requirement. If someone changes the safety
+logic six months from now, these tests are the first line of defence."
+
+---
+
+## ✅ Run Full Suite (1 min)
+
+```bash
+ceedling test:all
+```
+
+All tests pass including the safety logic tests from this demo.
+
+---
+
+## 🎯 Key Takeaways
+
+- ✅ **Tests before code** — requirements become executable specifications
+- ✅ **Each test expresses intent** — the test name is the requirement
+- ✅ **The test suite catches logic regressions** — changing `&&` to `||` fails immediately
+- ✅ **Millidegree / millivolt units** — integer units avoid floating-point precision issues
+
+---
+
+**Next Demo:** The safety threshold sits exactly at `temperature > 40000` and `voltage >= 4200`.
+What happens at 40000 exactly? What about a raw ADC value that overflows when converted?
+Demo 4 explores boundary conditions and an integer overflow bug from a real SDK driver.

@@ -109,4 +109,60 @@ Unit tests form the **wide base** of the testing pyramid — they are fast, chea
 
 ---
 
+## ✅ What Makes a Good Unit Test
+
+### The F.I.R.S.T. Principles
+
+| Letter | Property | What it means |
+|--------|----------|---------------|
+| **F** | **Fast** | Runs in milliseconds. If it is slow, it won't be run often — and tests that aren't run don't help anyone. |
+| **I** | **Independent** | No test depends on another test's state. Any test must be able to run alone or in any order and still produce the same result. |
+| **R** | **Repeatable** | Same result every single run — no flakiness, no sensitivity to timing, environment, or run order. |
+| **S** | **Self-validating** | Pass or fail is determined by assertions, not by a human reading printed output and deciding if it looks right. |
+| **T** | **Thorough / Timely** | Covers the happy path, boundary values, and failure cases. Written alongside or before the code it tests. |
+
+---
+
+### Naming — The Test Name Is the Requirement
+
+A good test name answers three questions: *what function*, *under what condition*, *what is the expected result*.
+
+```
+test_<function>_<condition>_<expected_result>
+
+✅  test_temp_sensor_read_returns_error_when_i2c_times_out
+✅  test_safety_logic_does_not_trigger_when_only_temperature_exceeds_threshold
+❌  test_thing2
+❌  test_sensor
+```
+
+If the test fails, the name alone should tell you exactly what broke and why — without reading the test body.
+
+---
+
+### Scope — One Behaviour Per Test
+
+A test that asserts ten things at once tells you *something* is wrong but not *what*.
+One logical concept per test gives a precise, actionable failure report.
+
+```
+❌  void test_sensor_driver(void)          // tests init + read + error + timeout
+✅  void test_sensor_read_parses_25C(void) // tests exactly one thing
+✅  void test_sensor_read_returns_error_on_timeout(void)
+```
+
+---
+
+### What a Good Test Should NOT Do
+
+| Anti-pattern | Why it is a problem |
+|---|---|
+| Call `sleep()` or wait on real time | Makes the suite slow and timing-sensitive |
+| Touch real hardware, files, or network | Introduces external dependencies that can fail for unrelated reasons |
+| Depend on state left by a previous test | Run order changes → test results change → suite is unreliable |
+| Test two unrelated behaviours in one function | One failure hides the other; failure message is ambiguous |
+| Use magic numbers without explanation | `TEST_ASSERT_EQUAL_INT32(25000, temp)` needs a comment: *25 °C in millideg* |
+
+---
+
 **Next:** See `why-unit-testing.md` for real-world cases where this prevents disasters, and `ceedling-basics.md` to start writing tests.

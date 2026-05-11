@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<testsuites tests="24" failures="0" time="0.005">
+  <testsuite name="test/test_led_control" tests="17" failures="0" skipped="0" errors="0" time="0.002">
+    <testcase name="test_led_control_init_should_succeed" time="0.000"/>
+    <testcase name="test_led_control_init_clears_state" time="0.000"/>
+    <testcase name="test_red_led_on_sets_red" time="0.000"/>
+    <testcase name="test_red_led_off_clears_red" time="0.000"/>
+    <testcase name="test_red_led_on_does_not_affect_green" time="0.000"/>
+    <testcase name="test_green_led_on_sets_green" time="0.000"/>
+    <testcase name="test_green_led_off_clears_green" time="0.000"/>
+    <testcase name="test_green_led_on_does_not_affect_red" time="0.000"/>
+    <testcase name="test_blue_led_on_sets_blue" time="0.000"/>
+    <testcase name="test_blue_led_off_clears_blue" time="0.000"/>
+    <testcase name="test_toggle_blue_changes_state" time="0.000"/>
+    <testcase name="test_all_three_leds_independent" time="0.000"/>
+    <testcase name="test_get_state_reflects_active_leds" time="0.000"/>
+    <testcase name="test_safety_logic_normal_conditions" time="0.000"/>
+    <testcase name="test_safety_logic_over_temp_only" time="0.000"/>
+    <testcase name="test_safety_logic_over_voltage_only" time="0.000"/>
+    <testcase name="test_safety_logic_both_thresholds_exceeded" time="0.000"/>
+  </testsuite>
+  <testsuite name="test/test_temp_sensor" tests="7" failures="0" skipped="0" errors="0" time="0.003">
+    <testcase name="test_convert_raw_normal_temp_no_overflow" time="0.000"/>
+    <testcase name="test_convert_raw_demonstrates_overflow_value" time="0.000"/>
+    <testcase name="test_convert_raw_overflow_safety_check_fails_to_trigger" time="0.000"/>
+    <testcase name="test_convert_raw_null_pointer_returns_error" time="0.000"/>
+    <testcase name="test_temp_sensor_read_parses_positive_temperature_correctly" time="0.000"/>
+    <testcase name="test_temp_sensor_read_handles_i2c_timeout_safely" time="0.000"/>
+    <testcase name="test_temp_sensor_read_calls_reset_on_bus_hung" time="0.000"/>
+  </testsuite>
+</testsuites>

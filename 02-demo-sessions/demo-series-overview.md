@@ -1,238 +1,156 @@
 # 🎬 Demo Series Overview
 
-## 📚 Complete Demo Session Series
-
-This comprehensive demo series progressively builds unit testing skills for embedded developers, from basic concepts to advanced integration patterns.
-
 ## 🎯 Learning Progression
 
 ```
-Demo 1: Simple Start (30 min)
+Demo 1: Simple Start          (30 min)  – led_control, first tests, Red-Green-Refactor
     ↓
-Demo 2: Mocking Hardware (45 min)
+Demo 2: Mocking Hardware      (45 min)  – i2c_hal + temp_sensor, CMock call sequencing
     ↓
-Demo 3: Test-Driven Development (45 min)
+Demo 3: Test-Driven Development (45 min) – safety logic built test-first
     ↓
-Demo 4: Boundary Conditions (45 min)
+Demo 4: Boundary Conditions   (45 min)  – exact thresholds + integer overflow bug
     ↓
-Demo 5: Integration Testing (45 min)
+Demo 5: Integration Testing   (45 min)  – full safety charging pipeline end-to-end
 ```
 
 **Total Series Time: 3 hours 30 minutes**
+
+---
+
+## 🧰 Reference Project
+
+All demos use a single project: `reference-examples/my_project`
+
+This is a **safety charging demo** for the **MAX32655FTHR** (Analog Devices / Maxim).
+It combines:
+
+| Module | File(s) | Role |
+|--------|---------|------|
+| LED control | `led_control.c/.h` | RGB LED state tracker (no hardware deps) |
+| I2C HAL | `i2c_hal.c/.h` | Thin, mockable wrapper over the MXC I2C driver |
+| Temperature sensor | `temp_sensor.c/.h` | MAX31889 driver (real SDK in fw, HAL in test) |
+| ADC monitor | `adc_monitor.c/.h` | MAX32655 ADC → millivolt conversion |
+| Main | `main.c` | Safety loop: Temp > 40 °C AND Voltage ≥ 4.2 V → stop charging |
+
+**The production safety logic:**
+```c
+// Red LED always on (system running)
+// If temperature > 40000 millideg AND voltage >= 4200 mV:
+//     Green LED on  →  "stop charging" signal to MAX20303 PMIC via I2C
+```
+
+The demos build this project incrementally — attendees see how each testing concept
+applies directly to real firmware they would write.
+
+---
 
 ## 📋 Demo Session Details
 
 ### 🚀 Demo 1: Simple Start
 **Duration:** 30 minutes
-**Focus:** First unit test experience
-**Key Learning:** Red-Green-Refactor cycle, basic Ceedling setup
+**Module:** `led_control`
+**Key concept:** Red-Green-Refactor, host-native testing with no hardware deps
 
-**What Attendees Will See:**
-- Complete Ceedling project setup from scratch
-- First unit test written and executed live
-- The satisfaction of seeing tests pass
-- How unit testing applies to embedded development
+**What attendees see:**
+- `led_control.c` has zero hardware includes — compiles and runs on the host
+- `setUp()` gives every test a clean slate via `led_control_init()`
+- The AAA pattern (Arrange → Act → Assert) inside a test function
+- `TEST_ASSERT_BITS` for bitmask assertions
+- First failing test → passing test cycle
 
-**Takeaway:** "Unit testing is accessible and valuable for embedded developers"
-
-### 🎭 Demo 2: Mocking Hardware
-**Duration:** 45 minutes
-**Focus:** Testing without hardware dependencies
-**Key Learning:** CMock usage, hardware abstraction testing
-
-**What Attendees Will See:**
-- BME280 sensor driver developed without I2C hardware
-- CMock automatically generating test doubles
-- Error conditions tested safely with mocks
-- Development speed advantages of mock-driven development
-
-**Takeaway:** "Mock hardware interfaces to develop faster and test more thoroughly"
-
-### 🔴 Demo 3: Test-Driven Development
-**Duration:** 45 minutes
-**Focus:** Test-first development approach
-**Key Learning:** TDD cycle, design benefits of testing first
-
-**What Attendees Will See:**
-- PID controller built using strict TDD approach
-- How tests drive API design decisions
-- Safe refactoring with comprehensive test coverage
-- When TDD works well vs when it's challenging
-
-**Takeaway:** "TDD improves design quality and provides development confidence"
-
-### ⚠️ Demo 4: Boundary Conditions
-**Duration:** 45 minutes
-**Focus:** Systematic edge case testing
-**Key Learning:** Boundary value analysis, parametrized testing
-
-**What Attendees Will See:**
-- Battery safety system with critical thresholds
-- Systematic boundary testing vs ad hoc approaches
-- Parametrized tests covering dozens of conditions automatically
-- How boundary bugs cause real-world failures
-
-**Takeaway:** "Test boundaries systematically or find bugs in production"
-
-### 🔗 Demo 5: Integration Testing
-**Duration:** 45 minutes
-**Focus:** Multi-module testing strategies
-**Key Learning:** When integration tests are needed, testing pyramid balance
-
-**What Attendees Will See:**
-- Temperature monitoring system with multiple interacting components
-- Integration tests revealing bugs that unit tests miss
-- Proper balance of unit vs integration testing
-- Real-world embedded integration patterns
-
-**Takeaway:** "Unit tests prove components work individually; integration tests prove they work together"
-
-## 🎯 Cumulative Learning Objectives
-
-By completing all five demos, attendees will:
-
-### Technical Skills
-- ✅ Set up Ceedling projects from scratch
-- ✅ Write effective unit tests for embedded code
-- ✅ Use CMock to simulate hardware interfaces
-- ✅ Apply TDD principles to embedded development
-- ✅ Test boundary conditions systematically
-- ✅ Implement integration testing strategies
-
-### Strategic Understanding
-- ✅ Know when to use different testing approaches
-- ✅ Understand the testing pyramid for embedded systems
-- ✅ Balance development speed with test coverage
-- ✅ Apply testing to safety-critical embedded requirements
-- ✅ Integrate testing into existing development workflows
-
-## 📊 Demo Series Metrics
-
-### Complexity Progression
-```
-Demo 1: ████░░░░░░ (30% complexity)
-Demo 2: █████░░░░░ (50% complexity)
-Demo 3: ██████░░░░ (60% complexity)
-Demo 4: ███████░░░ (70% complexity)
-Demo 5: ████████░░ (80% complexity)
-```
-
-### Knowledge Building
-```
-Demo 1: Basic concepts      → First success experience
-Demo 2: Hardware abstraction → Mock-driven development
-Demo 3: Design methodology  → Test-first thinking
-Demo 4: Quality assurance   → Systematic testing
-Demo 5: System thinking     → Comprehensive strategy
-```
-
-## 🛠️ Instructor Resources
-
-### Demo Preparation Checklist
-- [ ] **Demo 1**: Clean environment, basic LED example ready
-- [ ] **Demo 2**: CMock configured, sensor driver example prepared
-- [ ] **Demo 3**: PID controller domain knowledge refreshed
-- [ ] **Demo 4**: Safety system examples and boundary analysis ready
-- [ ] **Demo 5**: Multi-module integration example prepared
-
-### Common Equipment Needs
-- Laptop with Ceedling installed and tested
-- Projector/screen for live coding
-- Terminal with large, readable font
-- Code editor configured for embedded development
-- Timer for keeping sessions on track
-
-### Backup Plans
-Each demo includes detailed backup plans for:
-- Technical failures (compilation errors, tool issues)
-- Time management (running behind/ahead of schedule)
-- Audience engagement (difficult questions, low participation)
-
-## 🎭 Demo Series Adaptations
-
-### For Different Audiences
-
-#### **Beginner Developers (1-2 years embedded experience)**
-- Spend more time on Demo 1 and 2
-- Use simpler examples in Demo 3-5
-- Focus on practical benefits over theory
-- Allow extra time for questions and clarification
-
-#### **Intermediate Developers (3-5 years embedded experience)**
-- Move quickly through Demo 1
-- Emphasize advanced patterns in Demo 2-5
-- Include more real-world examples from their domain
-- Encourage sharing of their own testing challenges
-
-#### **Senior Developers (5+ years embedded experience)**
-- Focus on strategic aspects and team adoption
-- Discuss integration with existing workflows
-- Address organizational and process concerns
-- Cover advanced topics like test automation and CI/CD
-
-### For Different Time Constraints
-
-#### **Single Session (1 hour)**
-- Combine Demo 1 and 2 (45 minutes + 15 minutes Q&A)
-- Focus on core concepts and immediate value
-
-#### **Half-Day Workshop (3.5 hours)**
-- All five demos with short breaks between sessions
-- Extended Q&A and discussion periods
-- Hands-on time for attendees to try examples
-
-#### **Full-Day Workshop (7 hours)**
-- All demos plus hands-on exercises
-- Group work and peer collaboration
-- Individual consultation time
-- Development of team action plans
-
-## 🔄 Follow-Up Recommendations
-
-### Immediate Actions (Week 1)
-- [ ] Set up Ceedling on development machines
-- [ ] Try Exercise 1: First Test from hands-on section
-- [ ] Identify one existing module for unit testing pilot
-
-### Short-term Goals (Month 1)
-- [ ] Complete exercises 1-3 from hands-on section
-- [ ] Write first production unit tests for new development
-- [ ] Share learnings with team members
-
-### Long-term Adoption (Months 2-6)
-- [ ] Integrate unit testing into development workflow
-- [ ] Establish team coding standards including testing
-- [ ] Measure and track testing metrics
-- [ ] Train additional team members
-
-## 📈 Success Metrics
-
-### Immediate Success Indicators
-- Attendees ask follow-up questions about specific implementations
-- Requests for hands-on practice sessions
-- Interest in applying to current projects
-- Positive feedback on demo clarity and relevance
-
-### Long-term Success Indicators
-- Teams adopting unit testing in new projects
-- Reduced debugging time and fewer field issues
-- Improved code quality metrics
-- Knowledge sharing within the organization
-
-## 📚 Supporting Materials
-
-### Provided with Demo Series
-- Complete source code for all demo examples
-- Step-by-step setup instructions
-- Common troubleshooting guides
-- Links to additional resources and documentation
-
-### Recommended Follow-up Resources
-- Hands-on exercise series (70% of learning)
-- Reference implementation examples
-- Project templates and tools
-- Community forums and support channels
+**Takeaway:** "Tests run in milliseconds on the PC. No board, no cable, no flash cycle."
 
 ---
 
-**The demo series provides the foundation - the real learning happens when attendees apply these concepts to their own embedded projects!**
+### 🎭 Demo 2: Mocking Hardware
+**Duration:** 45 minutes
+**Modules:** `i2c_hal` (mocked) + `temp_sensor` (read path)
+**Key concept:** CMock replaces real hardware; any I2C response can be injected
+
+**What attendees see:**
+- CMock auto-generates `mock_i2c_hal.h` from `i2c_hal.h` — no manual stubs
+- `StubWithCallback` injects a 25 °C byte pattern `{0x13, 0x88}`
+- MAX31889 encoding math walked through live (raw × 5 = millideg)
+- I2C timeout test — sensor disconnect without physically unplugging anything
+- I2C bus-hung test — `i2c_hal_reset_ExpectAndReturn()` verifies recovery fires exactly once
+- `tearDown()` → `Verify()` as the silent gatekeeper
+
+**Takeaway:** "Fault injection without touching hardware. CMock verifies call counts automatically."
+
+---
+
+### 🔴 Demo 3: Test-Driven Development
+**Duration:** 45 minutes
+**Module:** Safety logic (`test_led_control.c` safety test group)
+**Key concept:** Write the test first; the test is the requirement
+
+**What attendees see:**
+- Test written before `red_led_on()` exists → compile failure (RED)
+- Convenience wrappers added → tests pass (GREEN)
+- Four safety logic tests built one at a time:
+  - Normal (both below) → green LED off
+  - Over-temp only → green LED off  (AND not OR)
+  - Over-voltage only → green LED off
+  - Both exceeded → green LED on
+- `&&` changed to `||` live to show the test suite catching the regression
+
+**Takeaway:** "The test suite locks down the logic. A future refactor cannot silently break it."
+
+---
+
+### ⚠️ Demo 4: Boundary Conditions
+**Duration:** 45 minutes
+**Modules:** Safety threshold boundaries + `temp_sensor_convert_raw`
+**Key concept:** Exact threshold semantics and silent integer overflow
+
+**What attendees see:**
+- `temperature > 40000` — at exactly 40000 must NOT trigger (`>` not `>=`)
+- `voltage >= 4200` — at exactly 4200 MUST trigger
+- One-unit-above / one-unit-below tests for each boundary
+- `temp_sensor_convert_raw` overflow bug from the Linux lt8460 IIO driver:
+  - `(uint16_t)` cast silently truncates a 32-bit result
+  - raw=200 → 202 °C stored as 6 °C → safety threshold never crossed
+  - Toggle `TEMP_CONVERT_BUG_ENABLED` to switch between bug and fix
+  - Unit tests catch the overflow; hardware testing cannot
+
+**Takeaway:** "Test exactly at the boundary. Integer overflow is silent — the test is not."
+
+---
+
+### 🔗 Demo 5: Integration Testing
+**Duration:** 45 minutes
+**Modules:** All three — `led_control` + `temp_sensor` + `adc_monitor`
+**Key concept:** End-to-end pipeline validation; cross-module data agreements
+
+**What attendees see:**
+- Full safety pipeline driven through unit tests:
+  I2C bytes → `temp_sensor_read()` → millideg → safety condition → LED state
+- Data unit agreement confirmed (millideg, millivolts — same units everywhere)
+- I2C error propagation: timeout must not cause a false alarm
+- The same logic that runs in `main.c` — proved before the board is touched
+- `ceedling gcov:all` — coverage report across all modules
+
+**Takeaway:** "Integration tests close the gap between passing unit tests and a working system."
+
+---
+
+## ⏱️ Session Timing Guide
+
+| Segment | Content | Time |
+|---------|---------|------|
+| Pre-demo | Reading materials, setup check | 15 min |
+| Demo 1 | Simple start | 30 min |
+| Break | | 10 min |
+| Demo 2 | Mocking hardware | 45 min |
+| Demo 3 | TDD | 45 min |
+| Break | | 10 min |
+| Demo 4 | Boundary conditions | 45 min |
+| Demo 5 | Integration testing | 45 min |
+| Q&A + hands-on intro | | 15 min |
+| **Total** | | **~4 hours** |
+
+---
+
+**Next:** Each `demo-0x-*/demo-script.md` contains the full presenter script with
+code snippets, timing cues, audience questions, and expected terminal output.
