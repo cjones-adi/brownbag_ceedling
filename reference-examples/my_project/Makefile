@@ -161,7 +161,7 @@ VPATH := $(VPATH)
 
 # Where to find header files for this project
 IPATH += .
-IPATH += include
+IPATH += include src
 IPATH := $(IPATH)
 
 AUTOSEARCH ?= 1
