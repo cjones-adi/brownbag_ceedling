@@ -274,3 +274,11 @@ void test_connect_returns_timeout_after_max_retries(void)
 | Call should never happen | Don't set expectation — unexpected calls auto-fail |
 | Call may or may not happen | `Func_IgnoreAndReturn(val)` |
 | Need to inspect arguments passed in | `Func_StubWithCallback(my_stub)` |
+
+### Anti-Pattern to Avoid ❌
+```
+1. Write all code
+2. Debug on hardware
+3. Add tests only when bugs are found
+→ Tests become regression nets, not design tools
+```

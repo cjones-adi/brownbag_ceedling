@@ -78,13 +78,7 @@ Sprint Planning → Daily (Code + Test) → Sprint Review → Retrospective → 
 | **During code** | Write tests as you code | Most embedded development | Balanced |
 | **After code** | Traditional testing | Hardware bring-up, prototypes | High — tests are retrofitted |
 
-### Anti-Pattern to Avoid ❌
-```
-1. Write all code
-2. Debug on hardware
-3. Add tests only when bugs are found
-→ Tests become regression nets, not design tools
-```
+
 
 ---
 

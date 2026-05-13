@@ -4,22 +4,24 @@ This section provides the foundational knowledge you need before diving into han
 
 ## 📖 Reading Sequence
 
-### 1. 🛠️ Installation & Setup
-- **installation-guide.md** - Complete Ceedling installation guide
-- **project-setup.md** - How to configure your first testing project
+### 1. 🤔 The "What" and "Why" Behind Testing
+- **01-what-is-unit-testing.md** - Definition, host vs. target testing, unit test components, and coverage goals
+- **02-why-unit-testing.md** - Real-world cases where unit tests prevent disasters
+- **03-unit-testing-in-sdlc.md** - How unit testing fits into every SDLC phase, methodology comparison, ROI, and team adoption roadmap
 
 ### 2. 🧩 Core Framework Components
-- **why-ceedling.md** - Why Ceedling is the right tool for embedded C unit testing
-- **ceedling-basics.md** - Ceedling build system and project structure
-- **unity-basics.md** - Unity testing framework fundamentals
-- **cmock-basics.md** - CMock for hardware interface mocking
-- **cexceptions-basics.md** - Exception handling in embedded tests
+- **04-why-ceedling.md** - Why Ceedling is the right tool for embedded C unit testing
+- **05-ceedling-basics.md** - Ceedling build system and project structure
+- **06-unity-basics.md** - Unity testing framework fundamentals
+- **07-cmock-basics.md** - CMock for hardware interface mocking
+- **08-cexceptions-basics.md** - Exception handling in embedded tests
 
-### 3. 🤔 The "Why" Behind Testing
-- **what-is-unit-testing.md** - Definition, host vs. target testing, unit test components, and coverage goals
-- **why-unit-testing.md** - Real-world cases where unit tests prevent disasters
-- **unit-testing-in-sdlc.md** - How unit testing fits into every SDLC phase, methodology comparison, ROI, and team adoption roadmap
-- **embedded-testing-patterns.md** - Common patterns specific to embedded development
+### 3. 🛠️ Installation & Setup
+- **09-installation-guide.md** - Complete Ceedling installation guide
+- **10-project-setup.md** - How to configure your first testing project
+
+### 4. 🛠️ Common Testing Patterns
+- **11- embedded-testing-patterns.md** - Common patterns specific to embedded development
 
 ## 🎯 Learning Outcomes
 
