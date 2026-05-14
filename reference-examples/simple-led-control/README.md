@@ -1,164 +1,123 @@
-# 💡 Simple LED Control - Reference Example
+# 💡 Simple LED Control — Reference Example
 
-A beginner-friendly Ceedling project that demonstrates basic unit testing concepts for embedded systems.
+**Demo 1 "Simple Start" reference project.**
 
-## 🎯 Project Overview
+A beginner-friendly Ceedling project that demonstrates basic unit testing concepts
+using a module with **zero hardware dependencies**.  No GPIO, no HAL, no mocks — just
+pure C logic tested with Unity on the host.
 
-This example implements a simple LED control module with comprehensive unit tests. It's designed to be your first introduction to embedded unit testing patterns.
+Hardware interaction (gpio_hal, CMock) is introduced in the **Demo 2** reference project
+(`reference-examples/simple_mock`).
+
+---
 
 ## 📁 Project Structure
 
 ```
 simple-led-control/
-├── project.yml         # Ceedling configuration
+├── project.yml              # Ceedling config (:use_mocks: FALSE)
 ├── src/
-│   ├── led_control.h   # LED control interface
-│   └── led_control.c   # LED control implementation
-├── test/
-│   └── test_led_control.c  # Unit tests
-├── build/              # Generated build artifacts
-└── mixin/              # Additional build configurations
+│   ├── led_control.h        # LED control interface (no hardware types)
+│   └── led_control.c        # Pure state-array implementation
+└── test/
+    └── test_led_control.c   # Unity tests — no mock includes
 ```
+
+---
 
 ## 🔍 What This Example Demonstrates
 
-### Core Testing Concepts
-- ✅ **Basic Unity Assertions** - `TEST_ASSERT_EQUAL`, `TEST_ASSERT_TRUE`
-- ✅ **Test Organization** - Setup, test cases, teardown
-- ✅ **Simple Mocking** - Hardware abstraction for testability
-- ✅ **Test Coverage** - Ensuring all code paths are tested
+| Concept | How it appears here |
+|---|---|
+| Arrange-Act-Assert (AAA) | Every test follows the three-section pattern |
+| `setUp()` / `tearDown()` | `setUp()` calls `led_control_init()` for a clean slate |
+| Basic Unity assertions | `TEST_ASSERT_TRUE/FALSE`, `TEST_ASSERT_FALSE_MESSAGE`, `TEST_ASSERT_GREATER_THAN` |
+| Boundary-condition testing | Out-of-range index returns `false`, does not crash |
+| LED independence | Turning one LED off must not affect others |
 
-### Embedded-Specific Patterns
-- 🎯 **Hardware Abstraction** - Separating logic from hardware
-- 🎯 **State Management** - Testing LED state tracking
-- 🎯 **Error Handling** - Validating invalid input handling
+---
 
 ## 🚀 Quick Start
 
-### Run All Tests
 ```bash
 cd reference-examples/simple-led-control/
 ceedling test:all
 ```
 
-### Run Specific Test
-```bash
-ceedling test:test_led_control
+Expected output:
 ```
+[test_led_control.c]
+  All tests passed.
 
-### Generate Coverage Report
-```bash
-ceedling gcov:all
+TESTED:  7
+PASSED:  7
+FAILED:  0
+IGNORED: 0
 ```
-
-### Clean Build Artifacts
-```bash
-ceedling clean
-```
-
-## 📋 Test Scenarios Covered
-
-### ✅ Basic Functionality
-- LED initialization
-- LED turn on/off operations
-- LED state querying
-
-### ✅ Edge Cases
-- Invalid LED numbers
-- Repeated operations
-- Boundary conditions
-
-### ✅ Error Conditions
-- Out-of-range LED indices
-- Invalid state parameters
-
-## 🔧 Key Learning Points
-
-### 1. Test Structure
-```c
-void setUp(void) {
-    // Initialize before each test
-    led_control_init();
-}
-
-void tearDown(void) {
-    // Cleanup after each test
-}
-
-void test_led_turn_on_should_set_led_state_high(void) {
-    // Arrange
-    uint8_t led_number = 1;
-
-    // Act
-    led_control_turn_on(led_number);
-
-    // Assert
-    TEST_ASSERT_TRUE(led_control_is_on(led_number));
-}
-```
-
-### 2. Hardware Abstraction
-The LED control module doesn't directly manipulate GPIO registers. Instead, it uses an abstraction layer that can be mocked for testing:
-
-```c
-// In production: calls actual GPIO functions
-// In tests: calls mocked functions
-void gpio_set_pin_high(uint8_t pin);
-void gpio_set_pin_low(uint8_t pin);
-```
-
-### 3. Testable Design
-- **Separation of Concerns** - Logic separated from hardware
-- **Pure Functions** - Predictable inputs and outputs
-- **State Management** - Clear state transitions
-
-## 📊 Coverage Analysis
-
-After running `ceedling gcov:all`, check:
-- **Line Coverage** - Which lines of code were executed
-- **Branch Coverage** - Which decision branches were taken
-- **Function Coverage** - Which functions were called
-
-Target: **100% line coverage** for this simple example.
-
-## 🎓 Learning Exercises
-
-### Beginner
-1. **Add a new test** for LED blinking functionality
-2. **Modify a test** to see it fail, then fix it
-3. **Add boundary testing** for maximum LED numbers
-
-### Intermediate
-1. **Implement LED PWM** control with corresponding tests
-2. **Add error reporting** functionality with tests
-3. **Create integration tests** with multiple LEDs
-
-## 🔗 Related Concepts
-
-This example introduces concepts used in:
-- Exercise 1: First Test (similar structure)
-- Demo 1: Simple Start (same project)
-- Exercise 3: Sensor Driver (hardware abstraction)
-
-## ❗ Common Pitfalls to Avoid
-
-### ❌ Don't Do This
-- Testing implementation details instead of behavior
-- Writing tests that depend on execution order
-- Mocking everything (over-mocking)
-
-### ✅ Do This Instead
-- Test the public interface behavior
-- Make each test independent
-- Mock only external dependencies
-
-## 🔄 Next Steps
-
-After understanding this example:
-1. **Try the exercises** in `03-hands-on-exercises/`
-2. **Study the complex example** in `complex-temp-sensor/`
-3. **Start your own project** using this as a template
 
 ---
 
-**Perfect for:** First-time embedded testing, learning basic patterns, teaching others
+## 📋 Test Scenarios Covered
+
+### Group A — Initialisation
+- All LEDs are OFF after `led_control_init()`
+
+### Group B — Turn on / turn off
+- `led_control_turn_on()` sets the LED to ON
+- `led_control_turn_off()` clears the LED
+- Turning one LED off does not affect neighbouring LEDs
+
+### Group C — Boundary conditions
+- `led_control_is_on()` returns `false` for an out-of-range index
+- `led_control_turn_on(255)` does not crash or corrupt valid state
+
+### Group D — Utility
+- `led_control_get_max_leds()` returns a non-zero value
+
+---
+
+## 🔧 Key Design Points
+
+### No hardware in `led_control.c`
+```c
+// The only includes:
+#include "led_control.h"   // our own header
+// stdint.h / stdbool.h pulled in via the header
+```
+No GPIO registers, no HAL, no SDK.  Runs anywhere a C compiler exists.
+
+### `setUp()` as the test reset button
+```c
+void setUp(void)
+{
+    led_control_init();   // fresh state — no test depends on another
+}
+```
+
+### AAA in action
+```c
+void test_led_control_turn_on_sets_led_to_on(void)
+{
+    // Arrange — setUp() already called init
+    uint8_t led = 3u;
+
+    // Act
+    led_control_turn_on(led);
+
+    // Assert
+    TEST_ASSERT_TRUE(led_control_is_on(led));
+}
+```
+
+---
+
+## 🔗 Related Resources
+
+| Resource | Purpose |
+|---|---|
+| `02-demo-sessions/demo-01-simple-start/` | Presenter script for this example |
+| `reference-examples/simple_mock/` | Demo 2 — adds gpio_hal + CMock mocking |
+
+---
+
+**Perfect for:** First-time embedded testing, learning AAA structure, introducing the Red-Green-Refactor cycle without the complexity of mocks.
